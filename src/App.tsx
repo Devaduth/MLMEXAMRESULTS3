@@ -2020,11 +2020,11 @@ function App() {
               </p>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="relative max-h-[600px] overflow-y-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 sticky top-0 z-10">
                   <tr>
-                    <th className="sticky left-0 bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200">
+                    <th className="sticky left-0 top-0 bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 z-20">
                       Register No.
                     </th>
                     {Object.entries(
@@ -2135,7 +2135,7 @@ function App() {
             of Engineering
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            Generated on 30/09/2025 10:27 AM | Controller of Examinations
+            &copy; Developed By <a href="https://www.instagram.com/devaduthhhh">Devaduth</a>
           </p>
         </div>
       </footer>
