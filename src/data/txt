@@ -1,14 +1,4 @@
-interface StudentResult {
-  registerNo: string;
-  courses: { [courseCode: string]: string };
-}
 
-interface DepartmentData {
-  name: string;
-  code: string;
-  students: StudentResult[];
-  courses: { [courseCode: string]: string };
-}
 
 const resultsData: { [key: string]: DepartmentData } = {
   CE: {
@@ -1330,32 +1320,6 @@ const resultsData: { [key: string]: DepartmentData } = {
         },
       },
       {
-        registerNo: "MLM24CS096",
-        courses: {
-          GAPHT121: "Withheld",
-          UCHWT127: "PASS",
-          GAMAT201: "Withheld",
-          GXEST203: "Withheld",
-          GXEST204: "Withheld",
-          PCCST205: "Withheld",
-          UCEST206: "Withheld",
-          GXESL208: "Withheld",
-        },
-      },
-      {
-        registerNo: "MLM24CS097",
-        courses: {
-          GAPHT121: "Withheld",
-          UCHWT127: "PASS",
-          GAMAT201: "Withheld",
-          GXEST203: "Withheld",
-          GXEST204: "Withheld",
-          PCCST205: "Withheld",
-          UCEST206: "Withheld",
-          GXESL208: "Withheld",
-        },
-      },
-      {
         registerNo: "MLM24CS098",
         courses: {
           GAPHT121: "C",
@@ -1693,19 +1657,6 @@ const resultsData: { [key: string]: DepartmentData } = {
           GXESL208: "S",
         },
       },
-      {
-        registerNo: "MLM24CS125",
-        courses: {
-          GAPHT121: "C+",
-          UCHWT127: "PASS",
-          GAMAT201: "B+",
-          GXEST203: "C",
-          GXEST204: "C",
-          PCCST205: "D",
-          UCEST206: "A+",
-          GXESL208: "A+",
-        },
-      },
     ],
   },
   EC: {
@@ -1849,5 +1800,3 @@ const resultsData: { [key: string]: DepartmentData } = {
     ],
   },
 };
-
-export default resultsData;

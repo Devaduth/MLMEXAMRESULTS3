@@ -24,16 +24,26 @@ const Result = () => {
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [sortOption, setSortOption] = useState<string>("default");
+  const [filterBy, setFilterBy] = useState<string>("none");
+
+  const failingGrades = ["F", "Absent", "Withheld"];
 
   const handleDepartmentChange = (deptCode: string) => {
     setSelectedDepartment(deptCode);
     setIsDropdownOpen(false);
+    setFilterBy("none"); // Reset filter when department changes
   };
 
   const handleSortChange = (option: string) => {
     setSortOption(option);
     setIsSortDropdownOpen(false);
+  };
+
+  const handleFilterChange = (option: string) => {
+    setFilterBy(option);
+    setIsFilterDropdownOpen(false);
   };
 
   const getGradeColor = (grade: string) => {
@@ -66,15 +76,48 @@ const Result = () => {
     }
   };
 
+  const countFails = (student: StudentResult) => {
+    return Object.values(student.courses).filter((grade) =>
+      failingGrades.includes(grade)
+    ).length;
+  };
+
+  const filterStudents = (students: StudentResult[]) => {
+    if (filterBy === "none") {
+      return students;
+    }
+    if (filterBy === "allPass") {
+      return students.filter((student) =>
+        Object.values(student.courses).every(
+          (grade) => !failingGrades.includes(grade)
+        )
+      );
+    }
+    if (filterBy.startsWith("failed")) {
+      const numStr = filterBy.replace("failed", "");
+      if (numStr === "5plus") {
+        return students.filter((student) => countFails(student) >= 5);
+      } else {
+        const num = parseInt(numStr, 10);
+        return students.filter((student) => countFails(student) === num);
+      }
+    }
+    // Filter by specific course pass
+    return students.filter((student) => {
+      const grade = student.courses[filterBy];
+      return grade && !failingGrades.includes(grade);
+    });
+  };
+
   const sortStudents = (students: StudentResult[]) => {
     const sorted = [...students];
     if (sortOption === "allPass") {
       return sorted.sort((a, b) => {
         const aHasNoFail = !Object.values(a.courses).some((grade) =>
-          ["F", "Absent"].includes(grade)
+          failingGrades.includes(grade)
         );
         const bHasNoFail = !Object.values(b.courses).some((grade) =>
-          ["F", "Absent"].includes(grade)
+          failingGrades.includes(grade)
         );
         if (aHasNoFail && !bHasNoFail) return -1;
         if (!aHasNoFail && bHasNoFail) return 1;
@@ -91,7 +134,7 @@ const Result = () => {
 
         const passed = students.filter((student) =>
           Object.values(student.courses ?? {}).every(
-            (grade) => !["F", "Absent"].includes(grade)
+            (grade) => !failingGrades.includes(grade)
           )
         ).length;
 
@@ -118,7 +161,7 @@ const Result = () => {
         Object.keys(courses).forEach((courseCode) => {
           const passedCount = students.filter((student) => {
             const grade = student.courses[courseCode];
-            return grade && !["F", "Absent"].includes(grade);
+            return grade && !failingGrades.includes(grade);
           }).length;
 
           const percentage =
@@ -133,12 +176,24 @@ const Result = () => {
       })()
     : null;
 
+  const getFilterDisplay = () => {
+    if (filterBy === "none") return "No Filter";
+    if (filterBy === "allPass") return "All Pass";
+    if (filterBy.startsWith("failed")) {
+      const numStr = filterBy.replace("failed", "");
+      if (numStr === "5plus") return "Failed in 5+ subjects";
+      return `Failed in ${numStr} subject${parseInt(numStr) > 1 ? "s" : ""}`;
+    }
+    const courseName = resultsData[selectedDepartment]?.courses[filterBy] || filterBy;
+    return `Passed in ${filterBy} - ${courseName.slice(0, 20)}...`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Department Selection and Sorting */}
-        <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Department Selection, Sorting, and Filtering */}
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Select Department
@@ -223,6 +278,90 @@ const Result = () => {
               </div>
             )}
           </div>
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Filter By
+            </label>
+            <button
+              onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-left shadow-sm hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-gray-900">
+                  {getFilterDisplay()}
+                </span>
+                <ChevronDown
+                  className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${
+                    isFilterDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </div>
+            </button>
+            {isFilterDropdownOpen && selectedDepartment && (
+              <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                <button
+                  onClick={() => handleFilterChange("none")}
+                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                >
+                  <div className="font-medium text-gray-900">No Filter</div>
+                </button>
+                <button
+                  onClick={() => handleFilterChange("allPass")}
+                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                >
+                  <div className="font-medium text-gray-900">All Pass</div>
+                </button>
+                <hr className="border-gray-100" />
+                {Object.entries(resultsData[selectedDepartment].courses).map(([code, name]) => (
+                  <button
+                    key={code}
+                    onClick={() => handleFilterChange(code)}
+                    className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                  >
+                    <div className="font-medium text-gray-900">Passed in {code}</div>
+                    <div className="text-sm text-gray-500">{name.slice(0, 30)}...</div>
+                  </button>
+                ))}
+                <hr className="border-gray-100" />
+                <button
+                  onClick={() => handleFilterChange("failed1")}
+                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                >
+                  <div className="font-medium text-gray-900">Failed in 1 subject</div>
+                </button>
+                <button
+                  onClick={() => handleFilterChange("failed2")}
+                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                >
+                  <div className="font-medium text-gray-900">Failed in 2 subjects</div>
+                </button>
+                <button
+                  onClick={() => handleFilterChange("failed3")}
+                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                >
+                  <div className="font-medium text-gray-900">Failed in 3 subjects</div>
+                </button>
+                <button
+                  onClick={() => handleFilterChange("failed4")}
+                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                >
+                  <div className="font-medium text-gray-900">Failed in 4 subjects</div>
+                </button>
+                <button
+                  onClick={() => handleFilterChange("failed5")}
+                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                >
+                  <div className="font-medium text-gray-900">Failed in 5 subjects</div>
+                </button>
+                <button
+                  onClick={() => handleFilterChange("failed5plus")}
+                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0"
+                >
+                  <div className="font-medium text-gray-900">Failed in 5+ subjects</div>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Department Statistics */}
@@ -274,6 +413,9 @@ const Result = () => {
             <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
               <h3 className="text-xl font-bold text-gray-900">
                 {resultsData[selectedDepartment].name} - Student Results
+                <span className="text-sm text-gray-600 ml-2">
+                  (No of students: {sortStudents(filterStudents(resultsData[selectedDepartment].students)).length})
+                </span>
               </h3>
               <p className="text-sm text-gray-600 mt-1">
                 Academic Year: 2024-28 | Semester: 2
@@ -299,14 +441,14 @@ const Result = () => {
                           {name}
                         </div>
                         <div className="text-xs text-green-600 mt-1">
-                          Pass: {courseStats?.[code]?.percentage || 0}%
+                          Pass: {courseStats?.[code]?.passed || 0} / {courseStats?.[code]?.percentage || 0}%
                         </div>
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {sortStudents(resultsData[selectedDepartment].students).map(
+                  {sortStudents(filterStudents(resultsData[selectedDepartment].students)).map(
                     (student, index) => (
                       <tr
                         key={student.registerNo}
@@ -360,6 +502,7 @@ const Result = () => {
                 { grade: "F", desc: "Fail" },
                 { grade: "PASS", desc: "Passed" },
                 { grade: "Absent", desc: "Absent" },
+                { grade: "Withheld", desc: "Withheld" },
               ].map(({ grade, desc }) => (
                 <div key={grade} className="text-center">
                   <div
