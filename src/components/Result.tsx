@@ -96,7 +96,9 @@ const Result = () => {
     if (filterBy.startsWith("failed")) {
       const numStr = filterBy.replace("failed", "");
       if (numStr === "5plus") {
-        return students.filter((student) => countFails(student) >= 5);
+        return students.filter((student) => countFails(student) > 5);
+      }else if(numStr === "3plus"){
+        return students.filter((student) => countFails(student) > 3);
       } else {
         const num = parseInt(numStr, 10);
         return students.filter((student) => countFails(student) === num);
@@ -340,6 +342,12 @@ const Result = () => {
                   className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
                 >
                   <div className="font-medium text-gray-900">Failed in 3 subjects</div>
+                </button>
+                <button
+                  onClick={() => handleFilterChange("failed3plus")}
+                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0"
+                >
+                  <div className="font-medium text-gray-900">Failed in 3+ subjects</div>
                 </button>
                 <button
                   onClick={() => handleFilterChange("failed4")}
