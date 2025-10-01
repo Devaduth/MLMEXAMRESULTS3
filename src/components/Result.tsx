@@ -5,8 +5,12 @@ import {
   BookOpen,
   Users,
   Trophy,
+  Download,
 } from "lucide-react";
 import resultsData from "../data/ResultsData";
+import GradeLegend from "./GradeLegend";
+import { jsPDF } from "jspdf";
+import * as XLSX from "xlsx";
 
 interface StudentResult {
   registerNo: string;
@@ -27,13 +31,23 @@ const Result = () => {
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [sortOption, setSortOption] = useState<string>("default");
   const [filterBy, setFilterBy] = useState<string>("none");
+  const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
+  const [downloadFormVisible, setDownloadFormVisible] = useState(false);
+  const [downloadTitle, setDownloadTitle] = useState("");
+  const [downloadDescription, setDownloadDescription] = useState("");
+  const [classSem, setClassSem] = useState("");
+  const [teachers, setTeachers] = useState<{ [code: string]: string }>({});
+  const [studentRange, setStudentRange] = useState(""); // New state for range filter
 
   const failingGrades = ["F", "Absent", "Withheld"];
 
   const handleDepartmentChange = (deptCode: string) => {
     setSelectedDepartment(deptCode);
     setIsDropdownOpen(false);
-    setFilterBy("none"); // Reset filter when department changes
+    setFilterBy("none");
+    setSelectedStudents(new Set());
+    setTeachers({});
+    setStudentRange(""); // Reset range when department changes
   };
 
   const handleSortChange = (option: string) => {
@@ -44,6 +58,20 @@ const Result = () => {
   const handleFilterChange = (option: string) => {
     setFilterBy(option);
     setIsFilterDropdownOpen(false);
+  };
+
+  const handleStudentSelect = (registerNo: string) => {
+    const newSelectedStudents = new Set(selectedStudents);
+    if (newSelectedStudents.has(registerNo)) {
+      newSelectedStudents.delete(registerNo);
+    } else {
+      newSelectedStudents.add(registerNo);
+    }
+    setSelectedStudents(newSelectedStudents);
+  };
+
+  const handleTeacherChange = (code: string, name: string) => {
+    setTeachers((prev) => ({ ...prev, [code]: name }));
   };
 
   const getGradeColor = (grade: string) => {
@@ -83,11 +111,24 @@ const Result = () => {
   };
 
   const filterStudents = (students: StudentResult[]) => {
+    let filtered = [...students];
+
+    // Apply range filter if studentRange is provided
+    if (studentRange) {
+      const [startReg, endReg] = studentRange.split("-");
+      if (startReg && endReg) {
+        filtered = filtered.filter((student) => {
+          const regNum = student.registerNo;
+          return regNum >= startReg && regNum <= endReg;
+        });
+      }
+    }
+
     if (filterBy === "none") {
-      return students;
+      return filtered;
     }
     if (filterBy === "allPass") {
-      return students.filter((student) =>
+      return filtered.filter((student) =>
         Object.values(student.courses).every(
           (grade) => !failingGrades.includes(grade)
         )
@@ -96,16 +137,15 @@ const Result = () => {
     if (filterBy.startsWith("failed")) {
       const numStr = filterBy.replace("failed", "");
       if (numStr === "5plus") {
-        return students.filter((student) => countFails(student) > 5);
-      }else if(numStr === "3plus"){
-        return students.filter((student) => countFails(student) > 3);
+        return filtered.filter((student) => countFails(student) > 5);
+      } else if (numStr === "3plus") {
+        return filtered.filter((student) => countFails(student) > 3);
       } else {
         const num = parseInt(numStr, 10);
-        return students.filter((student) => countFails(student) === num);
+        return filtered.filter((student) => countFails(student) === num);
       }
     }
-    // Filter by specific course pass
-    return students.filter((student) => {
+    return filtered.filter((student) => {
       const grade = student.courses[filterBy];
       return grade && !failingGrades.includes(grade);
     });
@@ -190,12 +230,152 @@ const Result = () => {
     return `Passed in ${filterBy} - ${courseName.slice(0, 20)}...`;
   };
 
+  const generateReportContent = () => {
+    if (!selectedDepartment || selectedStudents.size === 0) return "";
+
+    const dept = resultsData[selectedDepartment];
+    const filteredStudents = sortStudents(filterStudents(dept.students)).filter(s =>
+      selectedStudents.has(s.registerNo)
+    );
+    const totalSelected = filteredStudents.length;
+    const passedSelected = filteredStudents.filter(s =>
+      Object.values(s.courses).every(g => !failingGrades.includes(g))
+    ).length;
+    const passPercentage = totalSelected > 0 ? Number(((passedSelected / totalSelected) * 100).toFixed(2)) : 0;
+
+    let content = `MANGALAM COLLEGE OF ENGINEERING\nDEPARTMENT OF ${dept.name.toUpperCase()}\nUNIVERSITY RESULT ANALYSIS ${new Date().toLocaleString('default', { month: 'long' }).toUpperCase()} 2025\n\n`;
+    content += `Class & Sem                                               : ${classSem}\n`;
+    content += `Academic Semester                                    : JAN 2025 - MAY 2025\n`;
+    content += `Total number of Students registered         : ${totalSelected}\n`;
+    content += `Total number of Students all cleared         : ${passedSelected}\n`;
+    content += `Pass Percentage in S2(with WH)              : (${passedSelected}/${totalSelected}) ${passPercentage}%\n`;
+    content += `Pass Percentage in S2(without WH)        : (${passedSelected}/${totalSelected}) ${passPercentage}%\n`;
+    content += `Overall Pass % upto S2                            : (${passedSelected}/${totalSelected}) ${passPercentage}%\n\n`;
+
+    content += `Sl No\tSubject Code\tSubject Name\tSubject Handled\tTotal No of Students\tNo.of students Passed\tNo.of Students failed\t% of pass\n`;
+    let slNo = 1;
+    Object.entries(dept.courses).forEach(([code, name]) => {
+      const total = filteredStudents.length;
+      const passed = filteredStudents.filter(s => !failingGrades.includes(s.courses[code] || "N/A")).length;
+      const failed = total - passed;
+      const percentage = total > 0 ? Number(((passed / total) * 100).toFixed(2)) : 0;
+      const teacher = teachers[code] || "Staff Name";
+      content += `${slNo}\t${code}\t${name}\t${teacher}\t${total}\t${passed}\t${failed}\t${percentage}\n`;
+      slNo++;
+    });
+
+    const failCounts = [1, 2, 3, "3plus"].map(n => {
+      if (n === "3plus") {
+        return filteredStudents.filter(s => countFails(s) > 3).length;
+      } else {
+        return filteredStudents.filter(s => countFails(s) === n).length;
+      }
+    });
+    content += `\nTotal Number of students failed in one subject\t\t${failCounts[0]}\n`;
+    content += `Total Number of students failed in 2 subjects\t\t${failCounts[1]}\n`;
+    content += `Total Number of students failed in 3 subjects\t\t${failCounts[2]}\n`;
+    content += `Total Number of students failed more than 3 subjects\t\t${failCounts[3]}\n`;
+    content += `Total Number of students failed in all subjects\t\t${filteredStudents.filter(s => countFails(s) === Object.keys(dept.courses).length).length}\n\n`;
+    content += `CLASS IN CHARGE\t\tHOD\t\tPRINCIPAL\n`;
+
+    return content;
+  };
+
+  const handleDownload = () => {
+    if (selectedStudents.size === 0) return;
+    setDownloadFormVisible(true);
+  };
+
+  const exportToExcel = () => {
+    const content = generateReportContent();
+    const lines = content.split("\n");
+    const wb = XLSX.utils.book_new();
+    const wsData = lines.map(line => line.split("\t"));
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(wb, ws, "ResultAnalysis");
+    XLSX.writeFile(wb, `${downloadTitle || "ResultAnalysis"}.xlsx`);
+    setDownloadFormVisible(false);
+  };
+
+  const exportToPDF = () => {
+    if (!selectedDepartment || selectedStudents.size === 0) return;
+
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+
+    const content = generateReportContent().split("\n");
+    let y = 20;
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 10;
+
+    // Header
+    doc.setFillColor(0, 102, 204);
+    doc.rect(0, 0, pageWidth, 20, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.text("MANGALAM COLLEGE OF ENGINEERING", pageWidth / 2, 12, { align: "center" });
+    doc.setFontSize(12);
+    doc.text(`DEPARTMENT OF ${resultsData[selectedDepartment].name.toUpperCase()}`, pageWidth / 2, 17, { align: "center" });
+    y = 30;
+
+    content.forEach(line => {
+      const textWidth = doc.getTextWidth(line);
+      if (y + 7 > pageHeight - margin) {
+        doc.addPage();
+        y = 20;
+        // Add header to new page
+        doc.setFillColor(0, 102, 204);
+        doc.rect(0, 0, pageWidth, 20, "F");
+        doc.setTextColor(255, 255, 255);
+        doc.text("MANGALAM COLLEGE OF ENGINEERING", pageWidth / 2, 12, { align: "center" });
+        doc.text(`DEPARTMENT OF ${resultsData[selectedDepartment].name.toUpperCase()}`, pageWidth / 2, 17, { align: "center" });
+        y = 30;
+      }
+
+      if (textWidth > pageWidth - 2 * margin) {
+        const words = line.split(" ");
+        let lineText = "";
+        for (let word of words) {
+          const testLine = lineText + (lineText ? " " : "") + word;
+          const testWidth = doc.getTextWidth(testLine);
+          if (testWidth > pageWidth - 2 * margin && lineText) {
+            doc.text(lineText, margin, y);
+            y += 7;
+            lineText = word;
+          } else {
+            lineText = testLine;
+          }
+        }
+        if (lineText) {
+          doc.text(lineText, margin, y);
+          y += 7;
+        }
+      } else {
+        doc.text(line, margin, y);
+        y += 7;
+      }
+    });
+
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Generated on: ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`, margin, pageHeight - 10);
+
+    doc.save(`${downloadTitle || "ResultAnalysis"}.pdf`);
+    setDownloadFormVisible(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Department Selection, Sorting, and Filtering */}
-        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Select Department
@@ -370,10 +550,106 @@ const Result = () => {
               </div>
             )}
           </div>
+          {/* New Range Filter Input */}
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Filter by Register Range
+            </label>
+            <input
+              type="text"
+              value={studentRange}
+              onChange={(e) => setStudentRange(e.target.value)}
+              placeholder="e.g., MLM24CS061-MLM24CS125"
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            />
+          </div>
         </div>
 
-        {/* Department Statistics */}
-        {selectedDepartment && departmentStats && (
+        {selectedDepartment && (
+          <div className="mb-4">
+            <button
+              onClick={handleDownload}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              disabled={selectedStudents.size === 0}
+            >
+              <Download className="h-5 w-5 mr-2" />
+              Download Report
+            </button>
+          </div>
+        )}
+        <div className="my-2">
+          <p className="text-lg">(Select students and click download report button to download the class report)</p>
+        </div>
+        {downloadFormVisible && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md overflow-y-auto max-h-96">
+              <h3 className="text-lg font-semibold mb-4">Download Report</h3>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <input
+                  type="text"
+                  value={downloadTitle}
+                  onChange={(e) => setDownloadTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  value={downloadDescription}
+                  onChange={(e) => setDownloadDescription(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Class & Sem</label>
+                <input
+                  type="text"
+                  value={classSem}
+                  onChange={(e) => setClassSem(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Subject Teachers</label>
+                {Object.entries(resultsData[selectedDepartment]?.courses || {}).map(([code, name]) => (
+                  <div key={code} className="mb-2">
+                    <label className="block text-xs text-gray-600">{code} - {name.slice(0, 20)}...</label>
+                    <input
+                      type="text"
+                      value={teachers[code] || ""}
+                      onChange={(e) => handleTeacherChange(code, e.target.value)}
+                      className="w-full px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setDownloadFormVisible(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={exportToExcel}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Export to Excel
+                </button>
+                <button
+                  onClick={exportToPDF}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                >
+                  Export to PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {selectedDepartment && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
               <div className="flex items-center">
@@ -415,7 +691,6 @@ const Result = () => {
           </div>
         )}
 
-        {/* Results Table */}
         {selectedDepartment && (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
@@ -435,7 +710,19 @@ const Result = () => {
                 <thead className="bg-gray-50 sticky top-0 z-10">
                   <tr>
                     <th className="sticky left-0 top-0 bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 z-20">
-                      Register No.
+                      <input
+                        type="checkbox"
+                        onChange={(e) => {
+                          const newSelected = new Set();
+                          if (e.target.checked) {
+                            sortStudents(filterStudents(resultsData[selectedDepartment].students)).forEach(s =>
+                              newSelected.add(s.registerNo)
+                            );
+                          }
+                          setSelectedStudents(newSelected);
+                        }}
+                        checked={selectedStudents.size === sortStudents(filterStudents(resultsData[selectedDepartment].students)).length}
+                      />
                     </th>
                     {Object.entries(
                       resultsData[selectedDepartment].courses
@@ -463,6 +750,11 @@ const Result = () => {
                         className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
                       >
                         <td className="sticky left-0 bg-inherit px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900 border-r border-gray-200">
+                          <input
+                            type="checkbox"
+                            checked={selectedStudents.has(student.registerNo)}
+                            onChange={() => handleStudentSelect(student.registerNo)}
+                          />
                           {student.registerNo}
                         </td>
                         {Object.keys(
@@ -490,41 +782,8 @@ const Result = () => {
           </div>
         )}
 
-        {/* Grade Legend */}
         {selectedDepartment && (
-          <div className="mt-8 bg-white rounded-xl shadow-md p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-              Grade Legend
-            </h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-              {[
-                { grade: "S", desc: "Outstanding" },
-                { grade: "A+", desc: "Excellent" },
-                { grade: "A", desc: "Very Good" },
-                { grade: "B+", desc: "Good Plus" },
-                { grade: "B", desc: "Good" },
-                { grade: "C+", desc: "Average Plus" },
-                { grade: "C", desc: "Average" },
-                { grade: "D", desc: "Pass" },
-                { grade: "P", desc: "Pass" },
-                { grade: "F", desc: "Fail" },
-                { grade: "PASS", desc: "Passed" },
-                { grade: "Absent", desc: "Absent" },
-                { grade: "Withheld", desc: "Withheld" },
-              ].map(({ grade, desc }) => (
-                <div key={grade} className="text-center">
-                  <div
-                    className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border mb-1 ${getGradeColor(
-                      grade
-                    )}`}
-                  >
-                    {grade}
-                  </div>
-                  <div className="text-xs text-gray-600">{desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <GradeLegend />
         )}
 
         {!selectedDepartment && (
