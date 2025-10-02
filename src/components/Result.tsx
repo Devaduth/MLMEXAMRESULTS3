@@ -14,6 +14,7 @@ import * as XLSX from "xlsx";
 
 interface StudentResult {
   registerNo: string;
+  name: string; // Added name field to match the required example
   courses: { [courseCode: string]: string };
 }
 
@@ -33,6 +34,7 @@ const Result = () => {
   const [filterBy, setFilterBy] = useState<string>("none");
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
   const [downloadFormVisible, setDownloadFormVisible] = useState(false);
+  const [downloadType, setDownloadType] = useState<"summary" | "studentList">("summary");
   const [downloadTitle, setDownloadTitle] = useState("");
   const [downloadDescription, setDownloadDescription] = useState("");
   const [classSem, setClassSem] = useState("");
@@ -281,13 +283,96 @@ const Result = () => {
     return content;
   };
 
+  const generateStudentListContent = () => {
+    if (!selectedDepartment || selectedStudents.size === 0) return "";
+
+    const dept = resultsData[selectedDepartment];
+    const filteredStudents = sortStudents(filterStudents(dept.students)).filter(s =>
+      selectedStudents.has(s.registerNo)
+    );
+    const totalSelected = filteredStudents.length;
+    const passedSelected = filteredStudents.filter(s =>
+      Object.values(s.courses).every(g => !failingGrades.includes(g))
+    ).length;
+    const passPercentage = totalSelected > 0 ? Number(((passedSelected / totalSelected) * 100).toFixed(2)) : 0;
+    const courseCodes = Object.keys(dept.courses);
+
+    // Compute stats per course
+    const passCounts: { [code: string]: number } = {};
+    const failureCounts: { [code: string]: number } = {};
+    const withheldCounts: { [code: string]: number } = {};
+    const absentCounts: { [code: string]: number } = {};
+    const passPercentages: { [code: string]: number } = {};
+
+    courseCodes.forEach(code => {
+      passCounts[code] = filteredStudents.filter(s => {
+        const grade = s.courses[code] || "N/A";
+        return !failingGrades.includes(grade);
+      }).length;
+      failureCounts[code] = filteredStudents.filter(s => s.courses[code] === "F").length;
+      withheldCounts[code] = filteredStudents.filter(s => s.courses[code] === "Withheld").length;
+      absentCounts[code] = filteredStudents.filter(s => s.courses[code] === "Absent").length;
+      passPercentages[code] = totalSelected > 0 ? Number(((passCounts[code] / totalSelected) * 100).toFixed(2)) : 0;
+    });
+
+    let content = `MANGALAM COLLEGE OF ENGINEERING\nDEPARTMENT OF ${dept.name.toUpperCase()}\nUNIVERSITY RESULT ANALYSIS ${new Date().toLocaleString('default', { month: 'long' }).toUpperCase()} 2025\n\n`;
+    content += `Class & Sem                                               : ${classSem}\n`;
+    content += `Academic Semester                                    : JAN 2025 - MAY 2025\n`; // Adjust as needed; hardcoded to match current
+    content += `Total number of Students registered         : ${totalSelected}\n`;
+    content += `Total number of Students all cleared         : ${passedSelected}\n`;
+    content += `Pass Percentage in S2                                : (${passedSelected}/${totalSelected}) ${passPercentage}%\n`;
+    content += `Overall Pass % upto S2                             : (${passedSelected}/${totalSelected}) ${passPercentage}%\n\n`;
+
+    // Student table header
+    content += `Sl. No.\tReg No\tName of Student\tSubject Code`;
+    for (let i = 0; i < courseCodes.length - 1; i++) {
+      content += `\t`;
+    }
+    content += `\tNo.of supplies in S2\n`; // Adjusted to S2 to match code context
+    content += `\t\t\t${courseCodes.join('\t')}\n`;
+
+    // Student rows
+    filteredStudents.forEach((student, index) => {
+      const slNo = index + 1;
+      content += `${slNo}\t${student.registerNo}\t${student.name || "N/A"}\t${courseCodes.map(code => student.courses[code] || "N/A").join('\t')}\t${countFails(student)}\n`;
+    });
+
+    // Summary rows below student table
+    content += `No.of Pass\t\t\t${courseCodes.map(code => passCounts[code]).join('\t')}\n`;
+    content += `No.of Failures\t\t\t${courseCodes.map(code => failureCounts[code]).join('\t')}\n`;
+    content += `No of withheld\t\t\t${courseCodes.map(code => withheldCounts[code]).join('\t')}\n`;
+    content += `No.of Absentees\t\t\t${courseCodes.map(code => absentCounts[code]).join('\t')}\n`;
+    content += `Pass Percentage\t\t\t${courseCodes.map(code => passPercentages[code]).join('\t')}\n\n`;
+
+    // Subject table
+    content += `Sl No\tSubject Code\tSubject Name\tSubject Handled by\t% of pass\n`;
+    let slNo = 1;
+    Object.entries(dept.courses).forEach(([code, name]) => {
+      const teacher = teachers[code] || "Staff Name";
+      const percentage = passPercentages[code];
+      content += `${slNo}\t${code}\t${name}\t${teacher}\t${percentage}\n`;
+      slNo++;
+    });
+
+    content += `\n\nCLASS IN CHARGE\t\tHOD\t\tPRINCIPAL\n`;
+
+    return content;
+  };
+
   const handleDownload = () => {
     if (selectedStudents.size === 0) return;
+    setDownloadType("summary");
+    setDownloadFormVisible(true);
+  };
+
+  const handleDownloadStudentList = () => {
+    if (selectedStudents.size === 0) return;
+    setDownloadType("studentList");
     setDownloadFormVisible(true);
   };
 
   const exportToExcel = () => {
-    const content = generateReportContent();
+    const content = downloadType === "summary" ? generateReportContent() : generateStudentListContent();
     const lines = content.split("\n");
     const wb = XLSX.utils.book_new();
     const wsData = lines.map(line => line.split("\t"));
@@ -298,7 +383,7 @@ const Result = () => {
   };
 
   const exportToPDF = () => {
-    if (!selectedDepartment || selectedStudents.size === 0) return;
+    if (!selectedDepartment || selectedStudents.size === 0 || downloadType !== "summary") return;
 
     const doc = new jsPDF({
       orientation: "portrait",
@@ -566,7 +651,7 @@ const Result = () => {
         </div>
 
         {selectedDepartment && (
-          <div className="mb-4">
+          <div className="mb-4 flex gap-4">
             <button
               onClick={handleDownload}
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -575,10 +660,21 @@ const Result = () => {
               <Download className="h-5 w-5 mr-2" />
               Download Report
             </button>
+            <button
+              onClick={handleDownloadStudentList}
+              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              disabled={selectedStudents.size === 0}
+            >
+              <Download className="h-5 w-5 mr-2" />
+              Download Student List
+            </button>
           </div>
         )}
         <div className="my-2">
-          <p className="text-lg">(Select students and click download report button to download the class report)</p>
+          <p className="text-lg">(Select students and click download report button to download the class report.)</p>
+        </div>
+        <div className="my-2">
+          <p className="text-lg">(Select students and click download Student list button to download the student list report sheet.)</p>
         </div>
         {downloadFormVisible && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
@@ -638,12 +734,14 @@ const Result = () => {
                 >
                   Export to Excel
                 </button>
-                <button
-                  onClick={exportToPDF}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                >
-                  Export to PDF
-                </button>
+                {downloadType === "summary" && (
+                  <button
+                    onClick={exportToPDF}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  >
+                    Export to PDF
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -724,6 +822,9 @@ const Result = () => {
                         checked={selectedStudents.size === sortStudents(filterStudents(resultsData[selectedDepartment].students)).length}
                       />
                     </th>
+                    <th className="sticky left-[150px] top-0 bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 z-20">
+                      Name
+                    </th>
                     {Object.entries(
                       resultsData[selectedDepartment].courses
                     ).map(([code, name]) => (
@@ -740,6 +841,9 @@ const Result = () => {
                         </div>
                       </th>
                     ))}
+                    <th className="px-3 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                      No. of Supplies
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -757,6 +861,9 @@ const Result = () => {
                           />
                           {student.registerNo}
                         </td>
+                        <td className="sticky left-[150px] bg-inherit px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
+                          {student.name || "N/A"}
+                        </td>
                         {Object.keys(
                           resultsData[selectedDepartment].courses
                         ).map((courseCode) => (
@@ -773,6 +880,9 @@ const Result = () => {
                             </span>
                           </td>
                         ))}
+                        <td className="px-3 py-4 whitespace-nowrap text-center text-sm font-bold text-red-600">
+                          {countFails(student)}
+                        </td>
                       </tr>
                     )
                   )}
