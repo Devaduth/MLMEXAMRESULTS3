@@ -1,15 +1,39 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import * as pdfjs from "pdfjs-dist";
 
 pdfjs.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js";
 
-const Home = () => {
-  const [jsonData, setJsonData] = useState(null);
-  const [error, setError] = useState(null);
+interface Course {
+  [code: string]: string;
+}
 
-  const handleUpload = async (e) => {
-    const file = e.target.files[0];
+interface CourseGrades {
+  [courseCode: string]: string;
+}
+
+interface Student {
+  registerNo: string;
+  courses: CourseGrades;
+}
+
+interface Department {
+  name: string;
+  code: string;
+  courses: Course;
+  students: Student[];
+}
+
+interface JsonData {
+  [deptCode: string]: Department;
+}
+
+const Home = () => {
+  const [jsonData, setJsonData] = useState<JsonData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       try {
         const text = await extractTextFromPDF(file);
@@ -17,26 +41,29 @@ const Home = () => {
         setJsonData(data);
         setError(null);
       } catch (err) {
-        setError("Error processing PDF: " + err.message);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        setError("Error processing PDF: " + errorMessage);
         setJsonData(null);
       }
     }
   };
 
-  const extractTextFromPDF = async (file) => {
+  const extractTextFromPDF = async (file: File): Promise<string> => {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjs.getDocument(arrayBuffer).promise;
     let text = "";
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
-      text += content.items.map((item) => item.str).join(" ") + "\n";
+      text += content.items.map((item: any) => 
+        'str' in item ? item.str : ''
+      ).join(" ") + "\n";
     }
     return text;
   };
 
-  const parseTextToJson = (text) => {
-    const results = {};
+  const parseTextToJson = (text: string): JsonData => {
+    const results: JsonData = {};
     const deptPattern = /([A-Z& ]+)\[Full Time\] \(Generated on 30\/09\/2025 10:27 AM\)/g;
     let match;
     while ((match = deptPattern.exec(text))) {
@@ -57,7 +84,7 @@ const Home = () => {
 
       // Extract courses
       const coursePattern = /(\w+)\s+([\s\S]*?)(?=\n\w+\s+|\nRegister No)/g;
-      const courses = {};
+      const courses: Course = {};
       let courseMatch;
       while ((courseMatch = coursePattern.exec(section))) {
         const code = courseMatch[1].trim();
@@ -67,13 +94,13 @@ const Home = () => {
 
       // Extract students
       const studentPattern = /(MLM24\w+)\s+([\s\S]*?)(?=\nMLM24|$)/g;
-      const students = [];
+      const students: Student[] = [];
       let studentMatch;
       while ((studentMatch = studentPattern.exec(section))) {
         const reg = studentMatch[1].trim();
         let gradesStr = studentMatch[2].replace(/\s+/g, "").trim();
         const gradePattern = /(\w+)\(([\w+]+)\)/g;
-        const courseGrades = {};
+        const courseGrades: CourseGrades = {};
         let gradeMatch;
         while ((gradeMatch = gradePattern.exec(gradesStr))) {
           courseGrades[gradeMatch[1]] = gradeMatch[2];

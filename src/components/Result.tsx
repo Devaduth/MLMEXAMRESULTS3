@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   ChevronDown,
-  GraduationCap,
   BookOpen,
   Users,
   Trophy,
@@ -14,14 +13,7 @@ import * as XLSX from "xlsx";
 
 interface StudentResult {
   registerNo: string;
-  name: string; // Added name field to match the required example
-  courses: { [courseCode: string]: string };
-}
-
-interface DepartmentData {
-  name: string;
-  code: string;
-  students: StudentResult[];
+  name?: string;
   courses: { [courseCode: string]: string };
 }
 
@@ -456,10 +448,8 @@ const Result = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Department Selection, Sorting, and Filtering */}
+    <div>
+      {/* Department Selection, Sorting, and Filtering */}
         <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -757,7 +747,7 @@ const Result = () => {
                     Total Students
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {departmentStats.totalStudents}
+                    {departmentStats?.totalStudents || 0}
                   </p>
                 </div>
               </div>
@@ -768,7 +758,7 @@ const Result = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-600">Pass Rate</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {departmentStats.passPercentage}%
+                    {departmentStats?.passPercentage || 0}%
                   </p>
                 </div>
               </div>
@@ -781,7 +771,7 @@ const Result = () => {
                     Total Courses
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {departmentStats.totalCourses}
+                    {departmentStats?.totalCourses || 0}
                   </p>
                 </div>
               </div>
@@ -811,7 +801,7 @@ const Result = () => {
                       <input
                         type="checkbox"
                         onChange={(e) => {
-                          const newSelected = new Set();
+                          const newSelected = new Set<string>();
                           if (e.target.checked) {
                             sortStudents(filterStudents(resultsData[selectedDepartment].students)).forEach(s =>
                               newSelected.add(s.registerNo)
@@ -909,8 +899,7 @@ const Result = () => {
           </div>
         )}
       </div>
-    </div>
-  );
+    );
 };
 
 export default Result;
