@@ -2,17 +2,22 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
-const fetch = require('node-fetch');
+const { OpenAI } = require('openai');
 
 dotenv.config();
 
 const app = express();
 
 // Validate environment variables
-if (!process.env.XAI_API_KEY) {
-  console.error('Error: XAI_API_KEY is not set in .env');
+if (!process.env.OPENAI_API_KEY) {
+  console.error('Error: OPENAI_API_KEY is not set in .env');
   process.exit(1);
 }
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 // Basic security middlewares
 app.use(express.json({ limit: '10mb' }));
@@ -68,63 +73,42 @@ app.post('/api/extract-pdf', async (req, res) => {
       }
     };
 
-    console.log('Making request to xAI API...');
-    const response = await fetch('https://api.x.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.XAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'grok-3',
+    console.log('Making request to OpenAI API...');
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo-1106",
         messages: [{
-          role: 'user',
+          role: "system",
+          content: "You are a precise data extraction assistant. Extract exam results into the exact JSON format provided. Return only valid JSON, no other text."
+        }, {
+          role: "user",
           content: `Extract structured exam results from this content. Return the data in exactly this JSON format: ${JSON.stringify(exampleFormat, null, 2)}. Each department should have its code, name, courses (with course codes and names), and student results (with register numbers and grades). Content to process: ${content}`
         }],
-        max_tokens: 2000,
+        response_format: { type: "json_object" },
         temperature: 0.1
-      })
-    });
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('xAI API Error:', response.status, errorText);
-      // Handle specific error cases
-      if (response.status === 403) {
-        return res.status(503).json({
-          error: 'Service Temporarily Unavailable',
-          details: 'API credits exhausted. Please contact administrator to recharge credits.'
-        });
+      if (!completion.choices?.[0]?.message?.content) {
+        throw new Error('Invalid API response structure');
       }
-      return res.status(500).json({ 
-        error: 'xAI API request failed', 
-        details: errorText 
-      });
-    }
 
-    const data = await response.json();
-    console.log('xAI API Response structure:', Object.keys(data));
-
-    if (!data.choices?.[0]?.message?.content) {
-      console.error('Invalid API response structure:', data);
-      return res.status(500).json({ 
-        error: 'Invalid response from xAI API',
-        details: 'Response missing required fields'
-      });
-    }
-
-    // Try to parse the response content as JSON
-    try {
-      const parsedContent = JSON.parse(data.choices[0].message.content);
+      const parsedContent = JSON.parse(completion.choices[0].message.content);
       if (!parsedContent.departments) {
         throw new Error('Response missing departments structure');
       }
-      return res.json(data);
-    } catch (parseError) {
-      console.error('Failed to parse xAI response:', parseError);
+      
+      return res.json({
+        choices: [{
+          message: {
+            content: completion.choices[0].message.content
+          }
+        }]
+      });
+    } catch (error) {
+      console.error('OpenAI API Error:', error);
       return res.status(500).json({
-        error: 'Invalid JSON in xAI response',
-        details: parseError.message
+        error: 'OpenAI API request failed',
+        details: error.message
       });
     }
 
