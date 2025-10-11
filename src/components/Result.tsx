@@ -14,7 +14,7 @@ import * as XLSX from "xlsx";
 
 interface StudentResult {
   registerNo: string;
-  name: string; // Added name field to match the required example
+  name?: string; // Made name optional since it's not available in the data
   courses: { [courseCode: string]: string };
 }
 
@@ -456,7 +456,7 @@ const Result = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen ">
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Department Selection, Sorting, and Filtering */}
@@ -651,7 +651,7 @@ const Result = () => {
         </div>
 
         {selectedDepartment && (
-          <div className="mb-4 flex gap-4">
+          <div className="mb-4 flex gap-4 justify-center">
             <button
               onClick={handleDownload}
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -670,11 +670,33 @@ const Result = () => {
             </button>
           </div>
         )}
-        <div className="my-2">
-          <p className="text-lg">(Select students and click download report button to download the class report.)</p>
-        </div>
-        <div className="my-2">
-          <p className="text-lg">(Select students and click download Student list button to download the student list report sheet.)</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+          <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 shadow-sm">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <Download className="h-6 w-6 text-blue-500" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-blue-800">Class Report</h4>
+                <p className="text-sm text-blue-600 mt-1">
+                  Select students and use the "Download Report" button to generate a comprehensive class report.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 shadow-sm">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <Download className="h-6 w-6 text-green-500" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-green-800">Student List Report</h4>
+                <p className="text-sm text-green-600 mt-1">
+                  Select students and use the "Download Student List" button to generate a detailed student list report.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
         {downloadFormVisible && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
@@ -757,7 +779,7 @@ const Result = () => {
                     Total Students
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {departmentStats.totalStudents}
+                    {departmentStats?.totalStudents ?? 0}
                   </p>
                 </div>
               </div>
@@ -768,7 +790,7 @@ const Result = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-600">Pass Rate</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {departmentStats.passPercentage}%
+                    {departmentStats?.passPercentage ?? 0}%
                   </p>
                 </div>
               </div>
@@ -781,7 +803,7 @@ const Result = () => {
                     Total Courses
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {departmentStats.totalCourses}
+                    {departmentStats?.totalCourses ?? 0}
                   </p>
                 </div>
               </div>
@@ -811,7 +833,7 @@ const Result = () => {
                       <input
                         type="checkbox"
                         onChange={(e) => {
-                          const newSelected = new Set();
+                          const newSelected = new Set<string>();
                           if (e.target.checked) {
                             sortStudents(filterStudents(resultsData[selectedDepartment].students)).forEach(s =>
                               newSelected.add(s.registerNo)
