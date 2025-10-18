@@ -7,10 +7,10 @@ import {
   Trophy,
   Download,
 } from "lucide-react";
-import resultsData from "../data/ResultsData";
 import GradeLegend from "./GradeLegend";
 import { jsPDF } from "jspdf";
 import * as XLSX from "xlsx";
+import { ProcessedResults } from "../services/aiService";
 
 interface StudentResult {
   registerNo: string;
@@ -25,7 +25,11 @@ interface DepartmentData {
   courses: { [courseCode: string]: string };
 }
 
-const Result = () => {
+interface ResultProps {
+  resultsData: ProcessedResults;
+}
+
+const Result: React.FC<ResultProps> = ({ resultsData }) => {
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
