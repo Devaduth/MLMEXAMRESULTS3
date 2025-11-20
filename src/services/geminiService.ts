@@ -35,13 +35,13 @@ class GeminiService {
       // Try the first model name
       try {
         this.model = genAI.getGenerativeModel({
-          model: 'models/gemini-flash-lite-latest',
+          model: 'models/gemini-2.5-pro',
           generationConfig: {
             temperature: 0.1,
-            maxOutputTokens: 8192, // Maximum for flash model
+            maxOutputTokens: 65536, // 64K tokens for Pro model - handles large responses
           },
         });
-        console.log('✅ Gemini model initialized: gemini-1.5-flash-8b with 8192 max output tokens');
+        console.log('✅ Gemini model initialized: gemini-1.5-pro-latest with 65536 max output tokens');
       } catch (error) {
         console.error('❌ Failed to initialize Gemini model:', error);
       }
@@ -211,7 +211,7 @@ JSON:`;
    */
   async parseUniversityPDFInChunks(pdfText: string): Promise<string> {
     // Split by department sections (look for department headers)
-    const chunkSize = 10000; // Reduced to 10K chars per chunk for better completion rate
+    const chunkSize = 6000; // Further reduced to 6K chars to completely avoid MAX_TOKENS
     const chunks: string[] = [];
     
     console.log(`📦 Splitting PDF into chunks (${pdfText.length} chars total)`);
@@ -291,7 +291,19 @@ JSON:`;
         
         if (Array.isArray(parsed)) {
           console.log(`📦 Chunk ${i + 1} added ${parsed.length} departments`);
-          allResults.push(...parsed);
+          
+          // Merge departments intelligently - combine students from same department
+          for (const dept of parsed) {
+            const existing = allResults.find(d => d.code === dept.code || d.name === dept.name);
+            if (existing) {
+              // Merge students from same department
+              console.log(`🔄 Merging students into existing department: ${dept.name}`);
+              existing.students = existing.students || [];
+              existing.students.push(...(dept.students || []));
+            } else {
+              allResults.push(dept);
+            }
+          }
         }
       } catch (error) {
         console.error(`❌ Error processing chunk ${i + 1}:`, error);
@@ -299,7 +311,21 @@ JSON:`;
       }
     }
     
-    console.log(`✅ Merged ${allResults.length} departments from ${chunks.length} chunks`);
+    // Remove duplicate students within each department
+    for (const dept of allResults) {
+      if (dept.students) {
+        const seen = new Set();
+        dept.students = dept.students.filter((student: any) => {
+          if (seen.has(student.registerNo)) {
+            return false;
+          }
+          seen.add(student.registerNo);
+          return true;
+        });
+      }
+    }
+    
+    console.log(`✅ Merged ${allResults.length} unique departments from ${chunks.length} chunks`);
     
     return JSON.stringify(allResults);
   }

@@ -220,9 +220,9 @@ export async function parseUniversityPDF(
     // Step 2: Send to Gemini for parsing (20-80%)
     onProgress?.(30, 'Analyzing PDF with Gemini AI...');
     
-    // Use chunking for large PDFs (>20K chars)
-    const useChunking = pdfText.length > 20000;
-    console.log(useChunking ? '📦 Using chunked parsing for large PDF' : '📄 Using single-pass parsing');
+    // Always use single-pass with Pro model (supports up to 1M input tokens, 64K output)
+    const useChunking = false; // Disabled - Pro model handles large PDFs in one call
+    console.log('📄 Using single-pass parsing with Gemini Pro');
     
     const jsonResponse = useChunking 
       ? await geminiService.parseUniversityPDFInChunks(pdfText)
