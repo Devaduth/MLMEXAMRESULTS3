@@ -17,6 +17,7 @@ export interface Subject {
   code: string;
   name: string;
   grade: string;
+  isSupply?: boolean; // Flag to indicate if this is a supply result
 }
 
 export interface Course {
@@ -218,7 +219,7 @@ export async function parseUniversityPDF(
     }
 
     // Step 2: Send to Gemini for parsing (20-80%)
-    onProgress?.(30, 'Analyzing PDF with Gemini AI...');
+    onProgress?.(30, 'Analyzing PDF...');
     
     // Always use single-pass with Pro model (supports up to 1M input tokens, 64K output)
     const useChunking = false; // Disabled - Pro model handles large PDFs in one call

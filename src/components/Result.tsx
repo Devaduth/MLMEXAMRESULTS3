@@ -5,6 +5,7 @@ import {
   Users,
   Trophy,
   Download,
+  Upload,
 } from "lucide-react";
 import { useResults } from "../context/ResultsContext";
 import GradeLegend from "./GradeLegend";
@@ -25,7 +26,7 @@ interface DepartmentData {
 }
 
 const Result = () => {
-  const { data, isLoading, error } = useResults();
+  const { data, isLoading, error, uploadSupplyPDF } = useResults();
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
@@ -40,6 +41,9 @@ const Result = () => {
   const [classSem, setClassSem] = useState("");
   const [teachers, setTeachers] = useState<{ [code: string]: string }>({});
   const [studentRange, setStudentRange] = useState("");
+  const [showSupplyUpload, setShowSupplyUpload] = useState(false);
+  const [supplyFile, setSupplyFile] = useState<File | null>(null);
+  const [supplyUploading, setSupplyUploading] = useState(false);
 
   // Transform parsed data to match existing component structure
   const resultsData = useMemo(() => {
@@ -526,6 +530,45 @@ const Result = () => {
     setDownloadFormVisible(false);
   };
 
+  const handleSupplyUpload = async () => {
+    if (!supplyFile) return;
+
+    setSupplyUploading(true);
+    try {
+      await uploadSupplyPDF(supplyFile);
+      setSupplyFile(null);
+      setShowSupplyUpload(false);
+      alert('Supply results merged successfully! Updated grades are now reflected in the student records.');
+    } catch (error) {
+      console.error('Supply upload failed:', error);
+      alert('Failed to upload supply results. Please try again.');
+    } finally {
+      setSupplyUploading(false);
+    }
+  };
+
+  const handleSupplyFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSupplyFile(file);
+    }
+  };
+
+  const isSupplyGrade = (registerNo: string, courseCode: string): boolean => {
+    if (!data) return false;
+    
+    for (const dept of data.departments) {
+      for (const course of dept.courses) {
+        const student = course.students.find(s => s.registerNumber === registerNo);
+        if (student) {
+          const subject = student.subjects.find(sub => sub.code === courseCode);
+          return subject?.isSupply === true;
+        }
+      }
+    }
+    return false;
+  };
+
   return (
     <div className="min-h-screen ">
       {/* Main Content */}
@@ -882,6 +925,51 @@ const Result = () => {
           </div>
         )}
 
+        {/* Supply Upload Section */}
+        {selectedDepartment && (
+          <div className="mb-6">
+            <button
+              onClick={() => setShowSupplyUpload(!showSupplyUpload)}
+              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md"
+            >
+              <Upload className="h-5 w-5 mr-2" />
+              {showSupplyUpload ? 'Hide Supply Upload' : 'Upload Supply Results'}
+            </button>
+          </div>
+        )}
+
+        {showSupplyUpload && selectedDepartment && (
+          <div className="mb-6 bg-green-50 border-2 border-green-200 rounded-xl p-6 shadow-md">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+              <Upload className="h-5 w-5 mr-2 text-green-600" />
+              Upload Supply Exam Results
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Upload a PDF file containing supply exam results. Grades for failed subjects will be automatically updated if students passed in the supply exam. Supply-updated grades will be marked with a green indicator.
+            </p>
+            <div className="flex items-center gap-4">
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={handleSupplyFileChange}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 cursor-pointer"
+              />
+              <button
+                onClick={handleSupplyUpload}
+                disabled={!supplyFile || supplyUploading}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium whitespace-nowrap"
+              >
+                {supplyUploading ? 'Uploading...' : 'Merge Results'}
+              </button>
+            </div>
+            {supplyFile && (
+              <p className="text-sm text-gray-600 mt-2">
+                Selected: {supplyFile.name}
+              </p>
+            )}
+          </div>
+        )}
+
         {selectedDepartment && (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
@@ -964,13 +1052,20 @@ const Result = () => {
                             key={courseCode}
                             className="px-3 py-4 whitespace-nowrap text-center"
                           >
-                            <span
-                              className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getGradeColor(
-                                student.courses[courseCode] || "N/A"
-                              )}`}
-                            >
-                              {student.courses[courseCode] || "N/A"}
-                            </span>
+                            <div className="flex flex-col items-center gap-1">
+                              <span
+                                className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getGradeColor(
+                                  student.courses[courseCode] || "N/A"
+                                )}`}
+                              >
+                                {student.courses[courseCode] || "N/A"}
+                              </span>
+                              {isSupplyGrade(student.registerNo, courseCode) && (
+                                <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded">
+                                  Supply
+                                </span>
+                              )}
+                            </div>
                           </td>
                         ))}
                         <td className="px-3 py-4 whitespace-nowrap text-center text-sm font-bold text-red-600">

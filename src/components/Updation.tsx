@@ -44,6 +44,9 @@ const Result = () => {
   const [studentRange, setStudentRange] = useState("");
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [supplyUploadError, setSupplyUploadError] = useState<string | null>(null);
+  const [isSupplyDragging, setIsSupplyDragging] = useState(false);
+  const [showSupplyUpload, setShowSupplyUpload] = useState(false);
 
   const failingGrades = ["F", "Absent", "Withheld"];
 
@@ -257,6 +260,128 @@ const Result = () => {
 
   const handleDragLeave = () => {
     setIsDragging(false);
+  };
+
+  const handleSupplyUpload = (file: File) => {
+    setSupplyUploadError(null);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const typedarray = new Uint8Array(event.target?.result as ArrayBuffer);
+      pdfjs
+        .getDocument(typedarray)
+        .promise.then((pdf) => {
+          const numPages = pdf.numPages;
+          const textPromises = [];
+          for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+            textPromises.push(pdf.getPage(pageNum).then((page) => page.getTextContent()));
+          }
+          return Promise.all(textPromises);
+        })
+        .then((contents) => {
+          let fullText = "";
+          contents.forEach((content) => {
+            let lastY: number | undefined;
+            let line = "";
+            content.items.forEach((item: any) => {
+              const y = item.transform[5];
+              if (lastY !== y) {
+                if (line) fullText += line + "\n";
+                line = "";
+                lastY = y;
+              }
+              line += item.str;
+              if (!item.hasEOL) line += " ";
+            });
+            if (line) fullText += line + "\n";
+          });
+
+          try {
+            const { departments } = parsePDFContent(fullText);
+            // Merge supply results with existing data
+            mergeSupplyResults(departments);
+            setShowSupplyUpload(false);
+            alert('Supply results merged successfully!');
+          } catch (error: any) {
+            console.error("Supply Parsing Error:", error.message);
+            setSupplyUploadError(`Failed to parse supply PDF: ${error.message}`);
+          }
+        })
+        .catch((error) => {
+          console.error("Supply PDF Processing Error:", error);
+          setSupplyUploadError(
+            "Failed to process supply PDF. Please ensure the file is valid."
+          );
+        });
+    };
+    reader.onerror = () => {
+      setSupplyUploadError("Error reading the supply PDF file.");
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const mergeSupplyResults = (supplyDepartments: { [key: string]: DepartmentData }) => {
+    const merged = { ...resultsData };
+    
+    Object.keys(supplyDepartments).forEach(deptCode => {
+      const supplyDept = supplyDepartments[deptCode];
+      const regularDept = merged[deptCode];
+      
+      if (!regularDept) {
+        console.warn(`Department ${deptCode} not found in regular results`);
+        return;
+      }
+
+      supplyDept.students.forEach(supplyStudent => {
+        const regularStudent = regularDept.students.find(
+          s => s.registerNo === supplyStudent.registerNo
+        );
+        
+        if (regularStudent) {
+          // Update grades for subjects in supply exam
+          Object.keys(supplyStudent.courses).forEach(courseCode => {
+            const supplyGrade = supplyStudent.courses[courseCode];
+            const regularGrade = regularStudent.courses[courseCode];
+            
+            // Only update if the supply grade is passing
+            if (!failingGrades.includes(supplyGrade)) {
+              regularStudent.courses[courseCode] = supplyGrade;
+              console.log(`Updated ${supplyStudent.registerNo} - ${courseCode}: ${regularGrade} → ${supplyGrade}`);
+            }
+          });
+        }
+      });
+    });
+
+    setResultsData(merged);
+  };
+
+  const handleSupplyFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type === "application/pdf") {
+      handleSupplyUpload(file);
+    } else {
+      setSupplyUploadError("Please upload a valid PDF file.");
+    }
+  };
+
+  const handleSupplyDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsSupplyDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === "application/pdf") {
+      handleSupplyUpload(file);
+    } else {
+      setSupplyUploadError("Please drop a valid PDF file.");
+    }
+  };
+
+  const handleSupplyDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsSupplyDragging(true);
+  };
+
+  const handleSupplyDragLeave = () => {
+    setIsSupplyDragging(false);
   };
 
   const handleDepartmentChange = (deptCode: string) => {
@@ -873,6 +998,60 @@ const Result = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Supply Upload Section */}
+                <div className="mb-6">
+                  <button
+                    onClick={() => setShowSupplyUpload(!showSupplyUpload)}
+                    className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <Upload className="h-5 w-5 mr-2" />
+                    {showSupplyUpload ? 'Hide Supply Upload' : 'Upload Supply Results'}
+                  </button>
+                </div>
+
+                {showSupplyUpload && (
+                  <div className="mb-6 bg-green-50 border-2 border-green-200 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Upload Supply Exam Results
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Upload a PDF file containing supply exam results. The grades for failed subjects will be automatically updated if students passed in the supply exam.
+                    </p>
+                    <div
+                      className={`border-2 border-dashed rounded-lg p-8 mb-4 transition-colors duration-200 ${
+                        isSupplyDragging ? "border-green-500 bg-green-100" : "border-green-300 bg-white"
+                      }`}
+                      onDragOver={handleSupplyDragOver}
+                      onDragLeave={handleSupplyDragLeave}
+                      onDrop={handleSupplyDrop}
+                    >
+                      <Upload className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                      <p className="text-gray-600 mb-4 text-center">
+                        {isSupplyDragging
+                          ? "Drop the supply PDF file here"
+                          : "Drag and drop supply PDF here or click to upload"}
+                      </p>
+                      <div className="flex justify-center">
+                        <label className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 cursor-pointer">
+                          <Upload className="h-5 w-5 mr-2" />
+                          Select Supply PDF
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={handleSupplyFileInput}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    {supplyUploadError && (
+                      <div className="text-red-600 text-sm mt-2 bg-red-50 p-3 rounded-lg">
+                        {supplyUploadError}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-4">

@@ -143,7 +143,7 @@ const WelcomeScreen: React.FC = () => {
               </p>
               
               <p className="text-sm text-gray-500 mt-2">
-                Processing with Google Gemini AI...
+                Processing please wait...
               </p>
             </div>
           )}
