@@ -31,7 +31,7 @@ const getGradeColor = (grade: string) => {
   };
 const GradeLegend = () => {
   return (
-    <div className="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-6">
+    <div className="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm p-6">
             <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
               Grade Legend
             </h4>

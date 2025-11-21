@@ -64,17 +64,17 @@ const WelcomeScreen: React.FC = () => {
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white dark:bg-slate-800 p-6 border border-gray-200 dark:border-slate-700 transition-colors duration-300">
-            <div className="bg-gray-100 dark:bg-slate-700 w-12 h-12 flex items-center justify-center mb-4">
-              <Zap className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+          <div className="bg-white dark:bg-slate-800 p-6 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+              <Zap className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
             </div>
             <h3 className="text-lg font-semibold font-poppins text-gray-800 dark:text-gray-100 mb-2">Lightning Fast</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 font-inter">AI-powered processing delivers results in minutes</p>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 p-6 border border-gray-200 dark:border-slate-700 transition-colors duration-300">
-            <div className="bg-gray-100 dark:bg-slate-700 w-12 h-12 flex items-center justify-center mb-4">
-              <Shield className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+          <div className="bg-white dark:bg-slate-800 p-6 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+              <Shield className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
             </div>
             <h3 className="text-lg font-semibold font-poppins text-gray-800 dark:text-gray-100 mb-2">Secure & Private</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 font-inter">Your data is processed securely and never stored</p>
@@ -90,10 +90,10 @@ const WelcomeScreen: React.FC = () => {
         </div>
 
         {/* Upload Section */}
-        <div className="bg-white dark:bg-slate-800 p-8 mb-8 border border-gray-200 dark:border-slate-700 transition-colors duration-300">
+        <div className="bg-white dark:bg-slate-800 p-8 mb-8 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm transition-colors duration-300">
           {/* Error Display */}
           {(localError || error) && (
-            <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
+            <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-lg">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
                   <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -117,17 +117,17 @@ const WelcomeScreen: React.FC = () => {
           {!isLoading ? (
             <>
               <div
-                className={`border-2 border-dashed p-12 text-center transition-all duration-200 ${
+                className={`border-2 border-dashed p-12 text-center transition-all duration-200 rounded-xl ${
                   isDragging
-                    ? 'border-gray-900 dark:border-gray-300 bg-gray-50 dark:bg-slate-700'
-                    : 'border-gray-300 dark:border-slate-600 hover:border-gray-400 dark:hover:border-slate-500'
+                    ? 'border-indigo-400 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30'
+                    : 'border-gray-300 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-800'
                 }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
               >
-                <div className="bg-gray-100 dark:bg-slate-700 w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <Upload className="w-8 h-8 text-gray-700 dark:text-gray-300" />
+                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Upload className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 
                 <h3 className="text-xl font-semibold font-poppins text-gray-900 dark:text-gray-100 mb-2">
@@ -148,7 +148,7 @@ const WelcomeScreen: React.FC = () => {
                 
                 <label
                   htmlFor="pdf-upload"
-                  className="inline-flex items-center px-6 py-2.5 bg-slate-900 dark:bg-slate-800 text-white font-medium font-poppins hover:bg-slate-800 dark:hover:bg-slate-700 transition-colors duration-200 cursor-pointer"
+                  className="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 text-white font-medium font-poppins hover:from-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-800 dark:hover:to-indigo-900 transition-all duration-200 rounded-lg shadow-sm cursor-pointer"
                 >
                   <FileText className="w-5 h-5 mr-2" />
                   Select PDF File
@@ -156,15 +156,15 @@ const WelcomeScreen: React.FC = () => {
 
                 <div className="mt-6 flex items-center justify-center gap-6 text-xs text-gray-500 dark:text-gray-400 font-inter">
                   <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500"></div>
+                    <div className="w-1.5 h-1.5 bg-indigo-400 dark:bg-indigo-500 rounded-full"></div>
                     <span>Up to 50MB</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500"></div>
+                    <div className="w-1.5 h-1.5 bg-indigo-400 dark:bg-indigo-500 rounded-full"></div>
                     <span>60-90 seconds</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500"></div>
+                    <div className="w-1.5 h-1.5 bg-indigo-400 dark:bg-indigo-500 rounded-full"></div>
                     <span>AI Powered</span>
                   </div>
                 </div>

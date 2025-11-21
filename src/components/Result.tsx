@@ -775,7 +775,7 @@ const Result = () => {
           <div className="mb-4 flex gap-4 justify-center">
             <button
               onClick={handleDownload}
-              className="inline-flex items-center px-4 py-2 bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 text-white hover:from-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-800 dark:hover:to-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm transition-all duration-200"
               disabled={selectedStudents.size === 0}
             >
               <Download className="h-5 w-5 mr-2" />
@@ -783,7 +783,7 @@ const Result = () => {
             </button>
             <button
               onClick={handleDownloadStudentList}
-              className="inline-flex items-center px-4 py-2 bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 border border-gray-200 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm transition-all duration-200"
               disabled={selectedStudents.size === 0}
             >
               <Download className="h-5 w-5 mr-2" />
@@ -867,20 +867,20 @@ const Result = () => {
               <div className="flex justify-end gap-4">
                 <button
                   onClick={() => setDownloadFormVisible(false)}
-                  className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-slate-600"
+                  className="px-4 py-2 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-600 border border-gray-200 dark:border-slate-600 rounded-lg transition-all duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={exportToExcel}
-                  className="px-4 py-2 bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700"
+                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 text-white hover:from-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-800 dark:hover:to-indigo-900 rounded-lg shadow-sm transition-all duration-200"
                 >
                   Export to Excel
                 </button>
                 {downloadType === "summary" && (
                   <button
                     onClick={exportToPDF}
-                    className="px-4 py-2 bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700"
+                    className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 text-white hover:from-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-800 dark:hover:to-indigo-900 rounded-lg shadow-sm transition-all duration-200"
                   >
                     Export to PDF
                   </button>
@@ -892,10 +892,10 @@ const Result = () => {
 
         {selectedDepartment && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-5">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm p-5">
               <div className="flex items-center justify-between mb-3">
-                <div className="bg-gray-100 dark:bg-slate-700 p-2.5">
-                  <Users className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 p-2.5 rounded-lg">
+                  <Users className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold font-poppins text-gray-900 dark:text-white">
@@ -906,10 +906,10 @@ const Result = () => {
               <p className="text-sm text-gray-600 dark:text-gray-400 font-inter font-medium">Total Students</p>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-5">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm p-5">
               <div className="flex items-center justify-between mb-3">
-                <div className="bg-gray-100 dark:bg-slate-700 p-2.5">
-                  <Trophy className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 p-2.5 rounded-lg">
+                  <Trophy className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold font-poppins text-gray-900 dark:text-white">
@@ -920,10 +920,10 @@ const Result = () => {
               <p className="text-sm text-gray-600 dark:text-gray-400 font-inter font-medium">Pass Rate</p>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-5">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm p-5">
               <div className="flex items-center justify-between mb-3">
-                <div className="bg-gray-100 dark:bg-slate-700 p-2.5">
-                  <BookOpen className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 p-2.5 rounded-lg">
+                  <BookOpen className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold font-poppins text-gray-900 dark:text-white">
@@ -941,7 +941,7 @@ const Result = () => {
           <div className="mb-6">
             <button
               onClick={() => setShowSupplyUpload(!showSupplyUpload)}
-              className="inline-flex items-center px-5 py-2.5 bg-slate-900 dark:bg-slate-800 text-white font-medium font-poppins hover:bg-slate-800 dark:hover:bg-slate-700 transition-colors duration-200"
+              className="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 text-white font-medium font-poppins hover:from-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-800 dark:hover:to-indigo-900 transition-all duration-200 rounded-lg shadow-sm"
             >
               <Upload className="h-4 w-4 mr-2" />
               {showSupplyUpload ? 'Hide Supply Upload' : 'Upload Supply Results'}
@@ -950,9 +950,9 @@ const Result = () => {
         )}
 
         {showSupplyUpload && selectedDepartment && (
-          <div className="mb-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-5">
+          <div className="mb-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm p-5">
             <h3 className="text-lg font-semibold font-poppins text-gray-900 dark:text-gray-100 mb-2 flex items-center">
-              <Upload className="h-5 w-5 mr-2 text-gray-700 dark:text-gray-300" />
+              <Upload className="h-5 w-5 mr-2 text-indigo-600 dark:text-indigo-400" />
               Upload Supply Exam Results
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 font-inter mb-4">
@@ -982,8 +982,8 @@ const Result = () => {
         )}
 
         {selectedDepartment && (
-          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 overflow-hidden">
-            <div className="bg-gray-100 dark:bg-slate-900 px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-gradient-to-r from-gray-50 to-indigo-50/30 dark:from-slate-900 dark:to-indigo-950/20 px-6 py-4 border-b border-gray-200 dark:border-slate-700">
               <h3 className="text-lg font-semibold font-poppins text-gray-900 dark:text-white">
                 {resultsData[selectedDepartment].name}
               </h3>
