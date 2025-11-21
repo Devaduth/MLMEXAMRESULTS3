@@ -31,8 +31,8 @@ const getGradeColor = (grade: string) => {
   };
 const GradeLegend = () => {
   return (
-    <div className="mt-8 bg-white rounded-xl shadow-md p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+    <div className="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-6">
+            <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
               Grade Legend
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
@@ -53,13 +53,13 @@ const GradeLegend = () => {
               ].map(({ grade, desc }) => (
                 <div key={grade} className="text-center">
                   <div
-                    className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border mb-1 ${getGradeColor(
+                    className={`inline-flex px-3 py-1 text-xs font-medium border mb-1 ${getGradeColor(
                       grade
                     )}`}
                   >
                     {grade}
                   </div>
-                  <div className="text-xs text-gray-600">{desc}</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">{desc}</div>
                 </div>
               ))}
             </div>

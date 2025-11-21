@@ -50,27 +50,62 @@ const WelcomeScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="bg-gray-50 dark:bg-slate-900 flex items-center justify-center py-16 px-4 transition-colors duration-300">
       <div className="max-w-4xl w-full">
-        
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold font-poppins mb-4 text-gray-900 dark:text-white">
+            Exam Results Analysis
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400 font-inter max-w-2xl mx-auto">
+            Upload your PDF results and get instant analysis with AI-powered insights
+          </p>
+        </div>
+
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="bg-white dark:bg-slate-800 p-6 border border-gray-200 dark:border-slate-700 transition-colors duration-300">
+            <div className="bg-gray-100 dark:bg-slate-700 w-12 h-12 flex items-center justify-center mb-4">
+              <Zap className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+            </div>
+            <h3 className="text-lg font-semibold font-poppins text-gray-800 dark:text-gray-100 mb-2">Lightning Fast</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-inter">AI-powered processing delivers results in minutes</p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 p-6 border border-gray-200 dark:border-slate-700 transition-colors duration-300">
+            <div className="bg-gray-100 dark:bg-slate-700 w-12 h-12 flex items-center justify-center mb-4">
+              <Shield className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+            </div>
+            <h3 className="text-lg font-semibold font-poppins text-gray-800 dark:text-gray-100 mb-2">Secure & Private</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-inter">Your data is processed securely and never stored</p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 p-6 border border-gray-200 dark:border-slate-700 transition-colors duration-300">
+            <div className="bg-gray-100 dark:bg-slate-700 w-12 h-12 flex items-center justify-center mb-4">
+              <TrendingUp className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+            </div>
+            <h3 className="text-lg font-semibold font-poppins text-gray-800 dark:text-gray-100 mb-2">Smart Analytics</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-inter">Get detailed insights and performance metrics</p>
+          </div>
+        </div>
 
         {/* Upload Section */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8 mb-8">
+        <div className="bg-white dark:bg-slate-800 p-8 mb-8 border border-gray-200 dark:border-slate-700 transition-colors duration-300">
           {/* Error Display */}
           {(localError || error) && (
-            <div className="mb-6 bg-red-50 border-2 border-red-200 rounded-xl p-4">
+            <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
-                  <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div className="ml-3 flex-1">
-                  <h3 className="text-sm font-medium text-red-800">Upload Failed</h3>
-                  <p className="mt-1 text-sm text-red-700">{localError || error}</p>
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Upload Failed</h3>
+                  <p className="mt-1 text-sm text-red-700 dark:text-red-400">{localError || error}</p>
                   <button
                     onClick={() => setLocalError(null)}
-                    className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+                    className="mt-2 text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline"
                   >
                     Try Again
                   </button>
@@ -82,22 +117,24 @@ const WelcomeScreen: React.FC = () => {
           {!isLoading ? (
             <>
               <div
-                className={`border-3 border-dashed rounded-xl p-12 text-center transition-all duration-200 ${
+                className={`border-2 border-dashed p-12 text-center transition-all duration-200 ${
                   isDragging
-                    ? 'border-blue-500 bg-blue-50 scale-105'
-                    : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
+                    ? 'border-gray-900 dark:border-gray-300 bg-gray-50 dark:bg-slate-700'
+                    : 'border-gray-300 dark:border-slate-600 hover:border-gray-400 dark:hover:border-slate-500'
                 }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
               >
-                <Upload className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+                <div className="bg-gray-100 dark:bg-slate-700 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Upload className="w-8 h-8 text-gray-700 dark:text-gray-300" />
+                </div>
                 
-                <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-                  Upload University Results PDF
+                <h3 className="text-xl font-semibold font-poppins text-gray-900 dark:text-gray-100 mb-2">
+                  Upload Results PDF
                 </h3>
                 
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 dark:text-gray-400 font-inter mb-6 text-sm">
                   Drag and drop your PDF here, or click to browse
                 </p>
 
@@ -111,49 +148,64 @@ const WelcomeScreen: React.FC = () => {
                 
                 <label
                   htmlFor="pdf-upload"
-                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="inline-flex items-center px-6 py-2.5 bg-slate-900 dark:bg-slate-800 text-white font-medium font-poppins hover:bg-slate-800 dark:hover:bg-slate-700 transition-colors duration-200 cursor-pointer"
                 >
-                  <Upload className="w-5 h-5 mr-2" />
+                  <FileText className="w-5 h-5 mr-2" />
                   Select PDF File
                 </label>
 
-                <p className="text-sm text-gray-500 mt-4">
-                  Supports PDF files up to 50MB • Processes 29+ page documents in 60-90 seconds
-                </p>
+                <div className="mt-6 flex items-center justify-center gap-6 text-xs text-gray-500 dark:text-gray-400 font-inter">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500"></div>
+                    <span>Up to 50MB</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500"></div>
+                    <span>60-90 seconds</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500"></div>
+                    <span>AI Powered</span>
+                  </div>
+                </div>
               </div>
             </>
           ) : (
             /* Loading State */
             <div className="text-center py-12">
-              <div className="inline-block w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+              <div className="relative inline-block mb-6">
+                <div className="w-16 h-16 border-4 border-gray-200 dark:border-slate-700"></div>
+                <div className="absolute top-0 left-0 w-16 h-16 border-4 border-gray-900 dark:border-gray-300 border-t-transparent animate-spin"></div>
+              </div>
               
-              <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+              <h3 className="text-2xl font-semibold font-poppins text-gray-900 dark:text-gray-100 mb-3">
                 {uploadProgress.message}
               </h3>
               
-              <div className="max-w-md mx-auto bg-gray-200 rounded-full h-3 mb-4 overflow-hidden">
+              <div className="max-w-md mx-auto bg-gray-200 dark:bg-slate-700 h-3 mb-4 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 h-full rounded-full transition-all duration-300"
+                  className="bg-slate-900 dark:bg-gray-300 h-full transition-all duration-500"
                   style={{ width: `${uploadProgress.percent}%` }}
                 ></div>
               </div>
               
-              <p className="text-lg text-gray-600">
+              <p className="text-xl font-medium font-poppins text-gray-700 dark:text-gray-300 mb-4">
                 {uploadProgress.percent}% Complete
               </p>
               
-              <p className="text-sm text-gray-500 mt-2">
-                Please wait your results are loading this may take 5-10 minutes… <br />
-                Our AI is doing some heavy lifting! <br />
-                The more you wait, the sharper the output we deliver.
-              </p>
+              <div className="bg-gray-100 dark:bg-slate-800 p-5 max-w-lg mx-auto border border-gray-200 dark:border-slate-700">
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-inter leading-relaxed">
+                  ⏳ <strong>Processing your results...</strong><br />
+                  Our AI is analyzing the data with precision.<br />
+                  <span className="text-xs text-gray-500">This may take 5-10 minutes for large files.</span>
+                </p>
+              </div>
             </div>
           )}
         </div>
 
         
 
-        
       </div>
 
       {/* Debug Panel - Remove after fixing issue */}

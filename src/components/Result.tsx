@@ -87,8 +87,8 @@ const Result = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-lg text-gray-600">Processing PDF...</p>
+          <div className="inline-block w-16 h-16 border-4 border-gray-300 dark:border-slate-600 border-t-gray-800 dark:border-t-slate-400 rounded-full animate-spin mb-4"></div>
+          <p className="text-lg text-gray-600 dark:text-gray-400">Processing PDF...</p>
         </div>
       </div>
     );
@@ -98,9 +98,9 @@ const Result = () => {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-red-50 border-2 border-red-200 rounded-xl p-8 max-w-md">
-          <h3 className="text-xl font-semibold text-red-800 mb-2">Error</h3>
-          <p className="text-red-600">{error}</p>
+        <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-8 max-w-md">
+          <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">Error</h3>
+          <p className="text-gray-600 dark:text-gray-400">{error}</p>
         </div>
       </div>
     );
@@ -110,9 +110,9 @@ const Result = () => {
   if (!data || resultsData.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-8 max-w-md text-center">
-          <h3 className="text-xl font-semibold text-yellow-800 mb-2">No Data</h3>
-          <p className="text-yellow-600">Please upload a PDF to view results.</p>
+        <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-8 max-w-md text-center">
+          <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">No Data</h3>
+          <p className="text-gray-600 dark:text-gray-400">Please upload a PDF to view results.</p>
         </div>
       </div>
     );
@@ -570,23 +570,33 @@ const Result = () => {
   };
 
   return (
-    <div className="min-h-screen ">
+    <div className="bg-gray-50 dark:bg-slate-900">
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold font-poppins text-gray-900 dark:text-white mb-2">
+            Results Dashboard
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 font-inter">
+            Analyze and manage student performance
+          </p>
+        </div>
+
         {/* Department Selection, Sorting, and Filtering */}
         <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold font-poppins text-gray-700 dark:text-gray-300 mb-2">
               Select Department
             </label>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-left shadow-sm hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-left hover:border-gray-400 dark:hover:border-slate-600 focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-slate-600 transition-colors duration-200 font-inter"
             >
               <div className="flex items-center justify-between">
                 <span
                   className={
-                    selectedDepartment ? "text-gray-900" : "text-gray-500"
+                    selectedDepartment ? "text-gray-900 dark:text-gray-100 font-medium" : "text-gray-500 dark:text-gray-400"
                   }
                 >
                   {selectedDepartment
@@ -594,65 +604,62 @@ const Result = () => {
                     : "Choose a department..."}
                 </span>
                 <ChevronDown
-                  className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${
+                  className={`h-5 w-5 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${
                     isDropdownOpen ? "rotate-180" : ""
                   }`}
                 />
               </div>
             </button>
             {isDropdownOpen && (
-              <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+              <div className="absolute z-10 mt-2 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 max-h-60 overflow-auto">
                 {Object.entries(resultsData).map(([code, dept]) => (
                   <button
                     key={code}
                     onClick={() => handleDepartmentChange(code)}
-                    className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0"
+                    className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700 last:border-b-0 font-inter"
                   >
-                    <div className="font-medium text-gray-900">{dept.name}</div>
-                    {/* <div className="text-sm text-gray-500">
-                      Department Code: {code}
-                    </div> */}
+                    <div className="font-semibold text-gray-900 dark:text-gray-100">{dept.name}</div>
                   </button>
                 ))}
               </div>
             )}
           </div>
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold font-poppins text-gray-700 dark:text-gray-300 mb-2">
               Sort By
             </label>
             <button
               onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-left shadow-sm hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-left hover:border-gray-400 dark:hover:border-slate-600 focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-slate-600 transition-colors duration-200 font-inter"
             >
               <div className="flex items-center justify-between">
-                <span className="text-gray-900">
+                <span className="text-gray-900 dark:text-gray-100 font-medium text-sm">
                   {sortOption === "allPass"
                     ? "All Pass (No Failures)"
                     : "Register Number"}
                 </span>
                 <ChevronDown
-                  className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${
+                  className={`h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
                     isSortDropdownOpen ? "rotate-180" : ""
                   }`}
                 />
               </div>
             </button>
             {isSortDropdownOpen && (
-              <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+              <div className="absolute z-10 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 shadow-sm max-h-60 overflow-auto">
                 <button
                   onClick={() => handleSortChange("default")}
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0"
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700 last:border-b-0"
                 >
-                  <div className="font-medium text-gray-900">
+                  <div className="font-medium text-sm text-gray-900 dark:text-gray-100">
                     Register Number
                   </div>
                 </button>
                 <button
                   onClick={() => handleSortChange("allPass")}
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0"
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700 last:border-b-0"
                 >
-                  <div className="font-medium text-gray-900">
+                  <div className="font-medium text-sm text-gray-900 dark:text-gray-100">
                     All Pass (No Failures)
                   </div>
                 </button>
@@ -660,98 +667,98 @@ const Result = () => {
             )}
           </div>
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Filter By
             </label>
             <button
               onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-left shadow-sm hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-left hover:border-gray-400 dark:hover:border-slate-600 focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-slate-600 transition-colors duration-200"
             >
               <div className="flex items-center justify-between">
-                <span className="text-gray-900">
+                <span className="text-gray-900 dark:text-gray-100 text-sm">
                   {getFilterDisplay()}
                 </span>
                 <ChevronDown
-                  className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${
+                  className={`h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
                     isFilterDropdownOpen ? "rotate-180" : ""
                   }`}
                 />
               </div>
             </button>
             {isFilterDropdownOpen && selectedDepartment && (
-              <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+              <div className="absolute z-10 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 shadow-sm max-h-60 overflow-auto">
                 <button
                   onClick={() => handleFilterChange("none")}
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700"
                 >
-                  <div className="font-medium text-gray-900">No Filter</div>
+                  <div className="font-medium text-sm text-gray-900 dark:text-gray-100">No Filter</div>
                 </button>
                 <button
                   onClick={() => handleFilterChange("allPass")}
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700"
                 >
-                  <div className="font-medium text-gray-900">All Pass</div>
+                  <div className="font-medium text-sm text-gray-900 dark:text-gray-100">All Pass</div>
                 </button>
-                <hr className="border-gray-100" />
+                <hr className="border-gray-100 dark:border-slate-700" />
                 {Object.entries(resultsData[selectedDepartment].courses).map(([code, name]) => (
                   <button
                     key={code}
                     onClick={() => handleFilterChange(code)}
-                    className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                    className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700"
                   >
-                    <div className="font-medium text-gray-900">Passed in {code}</div>
-                    <div className="text-sm text-gray-500">{name.slice(0, 30)}...</div>
+                    <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Passed in {code}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{name.slice(0, 30)}...</div>
                   </button>
                 ))}
-                <hr className="border-gray-100" />
+                <hr className="border-gray-200 dark:border-slate-700" />
                 <button
                   onClick={() => handleFilterChange("failed1")}
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700"
                 >
-                  <div className="font-medium text-gray-900">Failed in 1 subject</div>
+                  <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Failed in 1 subject</div>
                 </button>
                 <button
                   onClick={() => handleFilterChange("failed2")}
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700"
                 >
-                  <div className="font-medium text-gray-900">Failed in 2 subjects</div>
+                  <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Failed in 2 subjects</div>
                 </button>
                 <button
                   onClick={() => handleFilterChange("failed3")}
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700"
                 >
-                  <div className="font-medium text-gray-900">Failed in 3 subjects</div>
+                  <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Failed in 3 subjects</div>
                 </button>
                 <button
                   onClick={() => handleFilterChange("failed3plus")}
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0"
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700"
                 >
-                  <div className="font-medium text-gray-900">Failed in 3+ subjects</div>
+                  <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Failed in 3+ subjects</div>
                 </button>
                 <button
                   onClick={() => handleFilterChange("failed4")}
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700"
                 >
-                  <div className="font-medium text-gray-900">Failed in 4 subjects</div>
+                  <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Failed in 4 subjects</div>
                 </button>
                 <button
                   onClick={() => handleFilterChange("failed5")}
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700"
                 >
-                  <div className="font-medium text-gray-900">Failed in 5 subjects</div>
+                  <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Failed in 5 subjects</div>
                 </button>
                 <button
                   onClick={() => handleFilterChange("failed5plus")}
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0"
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700 last:border-b-0"
                 >
-                  <div className="font-medium text-gray-900">Failed in 5+ subjects</div>
+                  <div className="font-medium text-sm text-gray-900 dark:text-gray-100">Failed in 5+ subjects</div>
                 </button>
               </div>
             )}
           </div>
           {/* New Range Filter Input */}
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Filter by Register Range
             </label>
             <input
@@ -759,7 +766,7 @@ const Result = () => {
               value={studentRange}
               onChange={(e) => setStudentRange(e.target.value)}
               placeholder="e.g., MLM24CS061-MLM24CS125"
-              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 px-4 py-3 text-left focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-slate-600 transition-all duration-200 text-gray-900 dark:text-gray-100"
             />
           </div>
         </div>
@@ -768,7 +775,7 @@ const Result = () => {
           <div className="mb-4 flex gap-4 justify-center">
             <button
               onClick={handleDownload}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="inline-flex items-center px-4 py-2 bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={selectedStudents.size === 0}
             >
               <Download className="h-5 w-5 mr-2" />
@@ -776,7 +783,7 @@ const Result = () => {
             </button>
             <button
               onClick={handleDownloadStudentList}
-              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              className="inline-flex items-center px-4 py-2 bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={selectedStudents.size === 0}
             >
               <Download className="h-5 w-5 mr-2" />
@@ -785,27 +792,27 @@ const Result = () => {
           </div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-          <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 shadow-sm">
+          <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-4">
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
-                <Download className="h-6 w-6 text-blue-500" />
+                <Download className="h-6 w-6 text-gray-700 dark:text-gray-300" />
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-blue-800">Class Report</h4>
-                <p className="text-sm text-blue-600 mt-1">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Class Report</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Select students and use the "Download Report" button to generate a comprehensive class report.
                 </p>
               </div>
             </div>
           </div>
-          <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 shadow-sm">
+          <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-4">
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
-                <Download className="h-6 w-6 text-green-500" />
+                <Download className="h-6 w-6 text-gray-700 dark:text-gray-300" />
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-green-800">Student List Report</h4>
-                <p className="text-sm text-green-600 mt-1">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Student List Report</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Select students and use the "Download Student List" button to generate a detailed student list report.
                 </p>
               </div>
@@ -813,46 +820,46 @@ const Result = () => {
           </div>
         </div>
         {downloadFormVisible && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md overflow-y-auto max-h-96">
-              <h3 className="text-lg font-semibold mb-4">Download Report</h3>
+          <div className="fixed inset-0 bg-gray-600 dark:bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-6 w-full max-w-md overflow-y-auto max-h-96">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Download Report</h3>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
                 <input
                   type="text"
                   value={downloadTitle}
                   onChange={(e) => setDownloadTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-slate-600"
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
                 <textarea
                   value={downloadDescription}
                   onChange={(e) => setDownloadDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-slate-600"
                   rows={3}
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Class & Sem</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class & Sem</label>
                 <input
                   type="text"
                   value={classSem}
                   onChange={(e) => setClassSem(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-slate-600"
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subject Teachers</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject Teachers</label>
                 {Object.entries(resultsData[selectedDepartment]?.courses || {}).map(([code, name]) => (
                   <div key={code} className="mb-2">
-                    <label className="block text-xs text-gray-600">{code} - {name.slice(0, 20)}...</label>
+                    <label className="block text-xs text-gray-600 dark:text-gray-400">{code} - {name.slice(0, 20)}...</label>
                     <input
                       type="text"
                       value={teachers[code] || ""}
                       onChange={(e) => handleTeacherChange(code, e.target.value)}
-                      className="w-full px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      className="w-full px-3 py-1 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-slate-600 text-sm"
                     />
                   </div>
                 ))}
@@ -860,20 +867,20 @@ const Result = () => {
               <div className="flex justify-end gap-4">
                 <button
                   onClick={() => setDownloadFormVisible(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-slate-600"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={exportToExcel}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  className="px-4 py-2 bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700"
                 >
                   Export to Excel
                 </button>
                 {downloadType === "summary" && (
                   <button
                     onClick={exportToPDF}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    className="px-4 py-2 bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700"
                   >
                     Export to PDF
                   </button>
@@ -884,43 +891,47 @@ const Result = () => {
         )}
 
         {selectedDepartment && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-blue-500 mr-3" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Students
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="bg-gray-100 dark:bg-slate-700 p-2.5">
+                  <Users className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold font-poppins text-gray-900 dark:text-white">
                     {departmentStats?.totalStudents ?? 0}
                   </p>
                 </div>
               </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-inter font-medium">Total Students</p>
             </div>
-            <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
-              <div className="flex items-center">
-                <Trophy className="h-8 w-8 text-green-500 mr-3" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Pass Rate</p>
-                  <p className="text-2xl font-bold text-gray-900">
+
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="bg-gray-100 dark:bg-slate-700 p-2.5">
+                  <Trophy className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold font-poppins text-gray-900 dark:text-white">
                     {departmentStats?.passPercentage ?? 0}%
                   </p>
                 </div>
               </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-inter font-medium">Pass Rate</p>
             </div>
-            <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
-              <div className="flex items-center">
-                <BookOpen className="h-8 w-8 text-purple-500 mr-3" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Courses
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
+
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="bg-gray-100 dark:bg-slate-700 p-2.5">
+                  <BookOpen className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold font-poppins text-gray-900 dark:text-white">
                     {departmentStats?.totalCourses ?? 0}
                   </p>
                 </div>
               </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-inter font-medium">Total Courses</p>
             </div>
           </div>
         )}
@@ -930,65 +941,64 @@ const Result = () => {
           <div className="mb-6">
             <button
               onClick={() => setShowSupplyUpload(!showSupplyUpload)}
-              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md"
+              className="inline-flex items-center px-5 py-2.5 bg-slate-900 dark:bg-slate-800 text-white font-medium font-poppins hover:bg-slate-800 dark:hover:bg-slate-700 transition-colors duration-200"
             >
-              <Upload className="h-5 w-5 mr-2" />
+              <Upload className="h-4 w-4 mr-2" />
               {showSupplyUpload ? 'Hide Supply Upload' : 'Upload Supply Results'}
             </button>
           </div>
         )}
 
         {showSupplyUpload && selectedDepartment && (
-          <div className="mb-6 bg-green-50 border-2 border-green-200 rounded-xl p-6 shadow-md">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-              <Upload className="h-5 w-5 mr-2 text-green-600" />
+          <div className="mb-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-5">
+            <h3 className="text-lg font-semibold font-poppins text-gray-900 dark:text-gray-100 mb-2 flex items-center">
+              <Upload className="h-5 w-5 mr-2 text-gray-700 dark:text-gray-300" />
               Upload Supply Exam Results
             </h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-inter mb-4">
               Upload a PDF file containing supply exam results. Grades for failed subjects will be automatically updated if students passed in the supply exam. Supply-updated grades will be marked with a green indicator.
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <input
                 type="file"
                 accept=".pdf"
                 onChange={handleSupplyFileChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 cursor-pointer"
+                className="block w-full text-sm text-gray-600 dark:text-gray-300 font-inter file:mr-3 file:py-2 file:px-4 file:border-0 file:text-sm file:font-medium file:bg-slate-900 dark:file:bg-slate-700 file:text-white hover:file:bg-slate-800 dark:hover:file:bg-slate-600 cursor-pointer file:transition-colors file:duration-200"
               />
               <button
                 onClick={handleSupplyUpload}
                 disabled={!supplyFile || supplyUploading}
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium whitespace-nowrap"
+                className="px-6 py-2 bg-slate-900 dark:bg-slate-800 text-white font-medium font-poppins hover:bg-slate-800 dark:hover:bg-slate-700 disabled:bg-gray-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed transition-colors duration-200 whitespace-nowrap"
               >
                 {supplyUploading ? 'Uploading...' : 'Merge Results'}
               </button>
             </div>
             {supplyFile && (
-              <p className="text-sm text-gray-600 mt-2">
-                Selected: {supplyFile.name}
+              <p className="text-sm text-gray-700 dark:text-gray-300 font-inter font-medium mt-3 bg-gray-100 dark:bg-slate-700 px-4 py-2">
+                ✓ Selected: {supplyFile.name}
               </p>
             )}
           </div>
         )}
 
         {selectedDepartment && (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">
-                {resultsData[selectedDepartment].name} - Student Results
-                <span className="text-sm text-gray-600 ml-2">
-                  (No of students: {sortStudents(filterStudents(resultsData[selectedDepartment].students)).length})
-                </span>
+          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 overflow-hidden">
+            <div className="bg-gray-100 dark:bg-slate-900 px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+              <h3 className="text-lg font-semibold font-poppins text-gray-900 dark:text-white">
+                {resultsData[selectedDepartment].name}
               </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Academic Year: 2024-28 | Semester: 2
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-inter mt-1 flex items-center gap-4">
+                <span>📊 Students: {sortStudents(filterStudents(resultsData[selectedDepartment].students)).length}</span>
+                <span>•</span>
+                <span>📅 Academic Year: 2024-28 | Semester: 2</span>
               </p>
             </div>
 
-            <div className="relative max-h-[600px] overflow-y-auto">
+            <div className="relative max-h-[600px] overflow-y-auto scrollbar-thin">
               <table className="w-full">
-                <thead className="bg-gray-50 sticky top-0 z-10">
+                <thead className="bg-gray-50 dark:bg-slate-900 sticky top-0 z-10 border-b border-gray-200 dark:border-slate-700">
                   <tr>
-                    <th className="sticky left-0 top-0 bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 z-20">
+                    <th className="sticky left-0 top-0 bg-gray-50 dark:bg-slate-900 px-6 py-4 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-200 dark:border-slate-700 z-20">
                       <input
                         type="checkbox"
                         onChange={(e) => {
@@ -1001,9 +1011,10 @@ const Result = () => {
                           setSelectedStudents(newSelected);
                         }}
                         checked={selectedStudents.size === sortStudents(filterStudents(resultsData[selectedDepartment].students)).length}
+                        className="w-4 h-4 text-gray-600 focus:ring-2 focus:ring-gray-500"
                       />
                     </th>
-                    <th className="sticky left-[150px] top-0 bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 z-20">
+                    <th className="sticky left-[150px] top-0 bg-gray-50 dark:bg-slate-900 px-6 py-4 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-200 dark:border-slate-700 z-20">
                       Name
                     </th>
                     {Object.entries(
@@ -1011,30 +1022,30 @@ const Result = () => {
                     ).map(([code, name]) => (
                       <th
                         key={code}
-                        className="px-3 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]"
+                        className="px-3 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[120px]"
                       >
                         <div className="font-bold">{code}</div>
-                        <div className="text-xs text-gray-400 normal-case mt-1 line-clamp-2">
+                        <div className="text-xs text-gray-400 dark:text-gray-400 normal-case mt-1 line-clamp-2">
                           {name}
                         </div>
-                        <div className="text-xs text-green-600 mt-1">
+                        <div className="text-xs text-green-600 dark:text-green-400 mt-1">
                           Pass: {courseStats?.[code]?.passed || 0} / {courseStats?.[code]?.percentage || 0}%
                         </div>
                       </th>
                     ))}
-                    <th className="px-3 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                    <th className="px-3 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[120px]">
                       No. of Supplies
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
                   {sortStudents(filterStudents(resultsData[selectedDepartment].students)).map(
                     (student, index) => (
                       <tr
                         key={student.registerNo}
-                        className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                        className={index % 2 === 0 ? "bg-white dark:bg-slate-800" : "bg-gray-50 dark:bg-slate-800/50"}
                       >
-                        <td className="sticky left-0 bg-inherit px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900 border-r border-gray-200">
+                        <td className="sticky left-0 bg-inherit px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900 dark:text-blue-400 border-r border-gray-200 dark:border-slate-700">
                           <input
                             type="checkbox"
                             checked={selectedStudents.has(student.registerNo)}
@@ -1042,7 +1053,7 @@ const Result = () => {
                           />
                           {student.registerNo}
                         </td>
-                        <td className="sticky left-[150px] bg-inherit px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
+                        <td className="sticky left-[150px] bg-inherit px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-slate-700">
                           {student.name || "N/A"}
                         </td>
                         {Object.keys(
@@ -1061,14 +1072,14 @@ const Result = () => {
                                 {student.courses[courseCode] || "N/A"}
                               </span>
                               {isSupplyGrade(student.registerNo, courseCode) && (
-                                <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded">
+                                <span className="text-xs text-green-600 dark:text-green-400 font-medium bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded">
                                   Supply
                                 </span>
                               )}
                             </div>
                           </td>
                         ))}
-                        <td className="px-3 py-4 whitespace-nowrap text-center text-sm font-bold text-red-600">
+                        <td className="px-3 py-4 whitespace-nowrap text-center text-sm font-bold text-red-600 dark:text-red-400">
                           {countFails(student)}
                         </td>
                       </tr>
@@ -1086,11 +1097,11 @@ const Result = () => {
 
         {!selectedDepartment && (
           <div className="text-center py-12">
-            <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-900 mb-2">
+            <BookOpen className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">
               Select a Department
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Choose a department from the dropdown above to view student
               results
             </p>

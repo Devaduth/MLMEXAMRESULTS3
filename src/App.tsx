@@ -22,7 +22,7 @@ function AppContent() {
   if (!hasPDFData) {
     console.log("📱 Rendering WelcomeScreen (no PDF data)");
     return (
-      <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-900">
         <Header />
         <WelcomeScreen />
         <Footer />
@@ -33,7 +33,7 @@ function AppContent() {
   // Show main dashboard after successful upload
   console.log("📊 Rendering Dashboard (has PDF data)");
   return (
-    <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-900">
       <Header />
       <Result />
       <Footer />
