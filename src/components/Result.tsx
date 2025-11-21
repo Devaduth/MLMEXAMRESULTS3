@@ -536,7 +536,7 @@ const Result = () => {
                   }
                 >
                   {selectedDepartment
-                    ? `${resultsData[selectedDepartment].name} (${selectedDepartment})`
+                    ? `${resultsData[selectedDepartment].name}`
                     : "Choose a department..."}
                 </span>
                 <ChevronDown
