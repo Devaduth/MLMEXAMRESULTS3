@@ -555,9 +555,9 @@ const Result = () => {
                     className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0"
                   >
                     <div className="font-medium text-gray-900">{dept.name}</div>
-                    <div className="text-sm text-gray-500">
+                    {/* <div className="text-sm text-gray-500">
                       Department Code: {code}
-                    </div>
+                    </div> */}
                   </button>
                 ))}
               </div>

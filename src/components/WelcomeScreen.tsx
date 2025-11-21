@@ -155,7 +155,7 @@ const WelcomeScreen: React.FC = () => {
       </div>
 
       {/* Debug Panel - Remove after fixing issue */}
-      <GeminiDebugger />
+      {/* <GeminiDebugger /> */}
     </div>
   );
 };
