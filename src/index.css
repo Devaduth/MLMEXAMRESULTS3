@@ -76,4 +76,44 @@
   .dark .scrollbar-thin {
     scrollbar-color: rgb(71 85 105) rgb(30 41 59); /* slate-600 slate-800 */
   }
+
+  /* Page Loader Animations */
+  @keyframes pulse-subtle {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  .animate-pulse-subtle {
+    animation: pulse-subtle 2s ease-in-out infinite;
+  }
+
+  .animate-pulse-subtle-delayed {
+    animation: pulse-subtle 2s ease-in-out infinite;
+    animation-delay: 0.4s;
+  }
+
+  @keyframes progress-bar {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-progress-bar {
+    animation: progress-bar 1.5s ease-in-out infinite;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 0.4s;
+  }
 }
