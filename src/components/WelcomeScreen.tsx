@@ -66,7 +66,7 @@ const WelcomeScreen: React.FC = () => {
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="bg-white dark:bg-slate-800 p-6 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
             <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
               <Zap className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
@@ -102,7 +102,7 @@ const WelcomeScreen: React.FC = () => {
               Get detailed insights and performance metrics
             </p>
           </div>
-        </div>
+        </div> */}
 
         {/* Upload Section */}
         <div className="bg-white dark:bg-slate-800 p-8 mb-8 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm transition-colors duration-300">

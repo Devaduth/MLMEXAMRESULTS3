@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useResults } from "../context/ResultsContext";
 import GradeLegend from "./GradeLegend";
+import ResultCharts from "./ResultCharts";
 import { jsPDF } from "jspdf";
 import * as XLSX from "xlsx";
 
@@ -47,9 +48,9 @@ const Result = () => {
 
   // Transform parsed data to match existing component structure
   const resultsData = useMemo(() => {
-    if (!data) return [];
+    if (!data) return {};
 
-    return data.departments.flatMap(dept => 
+    const departments = data.departments.flatMap(dept => 
       dept.courses.map(course => {
         // Collect ALL unique subjects across ALL students
         const allSubjects = new Map<string, string>();
@@ -78,6 +79,12 @@ const Result = () => {
         };
       })
     );
+
+    // Convert array to object keyed by code
+    return departments.reduce((acc, dept) => {
+      acc[dept.code] = dept;
+      return acc;
+    }, {} as { [key: string]: any });
   }, [data]);
 
   const failingGrades = ["F", "Absent", "Withheld"];
@@ -107,7 +114,7 @@ const Result = () => {
   }
 
   // Show message if no data
-  if (!data || resultsData.length === 0) {
+  if (!data || Object.keys(resultsData).length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-8 max-w-md text-center">
@@ -248,6 +255,38 @@ const Result = () => {
 
   const departmentStats = selectedDepartment
     ? (() => {
+        // Handle "ALL" departments case
+        if (selectedDepartment === "ALL") {
+          let totalStudents = 0;
+          let totalPassed = 0;
+          let totalSubjects = new Set<string>();
+
+          Object.values(resultsData).forEach((dept: any) => {
+            const deptStudents = dept.students;
+            totalStudents += deptStudents.length;
+            
+            const passedInDept = deptStudents.filter((student: any) =>
+              Object.values(student.courses ?? {}).every(
+                (grade) => !failingGrades.includes(grade)
+              )
+            ).length;
+            
+            totalPassed += passedInDept;
+            Object.keys(dept.courses).forEach(code => totalSubjects.add(code));
+          });
+
+          const passPercentage = totalStudents > 0 
+            ? Number(((totalPassed / totalStudents) * 100).toFixed(2))
+            : 0;
+
+          return {
+            totalStudents,
+            passPercentage,
+            totalCourses: totalSubjects.size,
+          };
+        }
+
+        // Handle individual department
         const students = resultsData[selectedDepartment]?.students || [];
         const totalStudents = students.length;
 
@@ -599,7 +638,9 @@ const Result = () => {
                     selectedDepartment ? "text-gray-900 dark:text-gray-100 font-medium" : "text-gray-500 dark:text-gray-400"
                   }
                 >
-                  {selectedDepartment
+                  {selectedDepartment === "ALL"
+                    ? "All Departments"
+                    : selectedDepartment
                     ? `${resultsData[selectedDepartment].name}`
                     : "Choose a department..."}
                 </span>
@@ -612,6 +653,13 @@ const Result = () => {
             </button>
             {isDropdownOpen && (
               <div className="absolute z-10 mt-2 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 max-h-60 overflow-auto">
+                <button
+                  onClick={() => handleDepartmentChange("ALL")}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-700 focus:bg-gray-100 dark:focus:bg-slate-700 focus:outline-none transition-colors duration-150 border-b border-gray-200 dark:border-slate-700 font-inter bg-indigo-50 dark:bg-indigo-900/20"
+                >
+                  <div className="font-semibold text-indigo-600 dark:text-indigo-400">📊 All Departments</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">View college-wide performance</div>
+                </button>
                 {Object.entries(resultsData).map(([code, dept]) => (
                   <button
                     key={code}
@@ -981,7 +1029,7 @@ const Result = () => {
           </div>
         )}
 
-        {selectedDepartment && (
+        {selectedDepartment && selectedDepartment !== "ALL" && (
           <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
             <div className="bg-gradient-to-r from-gray-50 to-indigo-50/30 dark:from-slate-900 dark:to-indigo-950/20 px-6 py-4 border-b border-gray-200 dark:border-slate-700">
               <h3 className="text-lg font-semibold font-poppins text-gray-900 dark:text-white">
@@ -1091,8 +1139,16 @@ const Result = () => {
           </div>
         )}
 
-        {selectedDepartment && (
+        {selectedDepartment && selectedDepartment !== "ALL" && (
           <GradeLegend />
+        )}
+        
+        {selectedDepartment && (
+          <ResultCharts
+            resultsData={resultsData}
+            selectedDepartment={selectedDepartment}
+            failingGrades={failingGrades}
+          />
         )}
 
         {!selectedDepartment && (
