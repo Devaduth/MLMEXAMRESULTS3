@@ -46,22 +46,33 @@ const Result = () => {
     if (!data) return [];
 
     return data.departments.flatMap(dept => 
-      dept.courses.map(course => ({
-        name: dept.name,
-        code: course.name, // Using course name as code
-        students: course.students.map(student => ({
-          registerNo: student.registerNumber,
-          name: student.name,
-          courses: student.subjects.reduce((acc, subject) => ({
-            ...acc,
-            [subject.code]: subject.grade
-          }), {})
-        })),
-        courses: course.students[0]?.subjects.reduce((acc, subject) => ({
-          ...acc,
-          [subject.code]: subject.name
-        }), {}) || {}
-      }))
+      dept.courses.map(course => {
+        // Collect ALL unique subjects across ALL students
+        const allSubjects = new Map<string, string>();
+        
+        course.students.forEach(student => {
+          student.subjects.forEach(subject => {
+            if (!allSubjects.has(subject.code)) {
+              allSubjects.set(subject.code, subject.name);
+            }
+          });
+        });
+
+        return {
+          name: dept.name,
+          code: course.name, // Using course name as code
+          students: course.students.map(student => ({
+            registerNo: student.registerNumber,
+            name: student.name,
+            courses: student.subjects.reduce((acc, subject) => ({
+              ...acc,
+              [subject.code]: subject.grade
+            }), {})
+          })),
+          // Use the complete map of all subjects instead of just first student's subjects
+          courses: Object.fromEntries(allSubjects)
+        };
+      })
     );
   }, [data]);
 
