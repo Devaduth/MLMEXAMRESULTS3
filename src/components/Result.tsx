@@ -1,20 +1,19 @@
-import React, { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   ChevronDown,
-  GraduationCap,
   BookOpen,
   Users,
   Trophy,
   Download,
 } from "lucide-react";
-import resultsData from "../data/ResultsData";
+import { useResults } from "../context/ResultsContext";
 import GradeLegend from "./GradeLegend";
 import { jsPDF } from "jspdf";
 import * as XLSX from "xlsx";
 
 interface StudentResult {
   registerNo: string;
-  name?: string; // Made name optional since it's not available in the data
+  name?: string;
   courses: { [courseCode: string]: string };
 }
 
@@ -26,6 +25,7 @@ interface DepartmentData {
 }
 
 const Result = () => {
+  const { data, isLoading, error } = useResults();
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
@@ -39,9 +39,69 @@ const Result = () => {
   const [downloadDescription, setDownloadDescription] = useState("");
   const [classSem, setClassSem] = useState("");
   const [teachers, setTeachers] = useState<{ [code: string]: string }>({});
-  const [studentRange, setStudentRange] = useState(""); // New state for range filter
+  const [studentRange, setStudentRange] = useState("");
+
+  // Transform parsed data to match existing component structure
+  const resultsData = useMemo(() => {
+    if (!data) return [];
+
+    return data.departments.flatMap(dept => 
+      dept.courses.map(course => ({
+        name: dept.name,
+        code: course.name, // Using course name as code
+        students: course.students.map(student => ({
+          registerNo: student.registerNumber,
+          name: student.name,
+          courses: student.subjects.reduce((acc, subject) => ({
+            ...acc,
+            [subject.code]: subject.grade
+          }), {})
+        })),
+        courses: course.students[0]?.subjects.reduce((acc, subject) => ({
+          ...acc,
+          [subject.code]: subject.name
+        }), {}) || {}
+      }))
+    );
+  }, [data]);
 
   const failingGrades = ["F", "Absent", "Withheld"];
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-lg text-gray-600">Processing PDF...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-red-50 border-2 border-red-200 rounded-xl p-8 max-w-md">
+          <h3 className="text-xl font-semibold text-red-800 mb-2">Error</h3>
+          <p className="text-red-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show message if no data
+  if (!data || resultsData.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-8 max-w-md text-center">
+          <h3 className="text-xl font-semibold text-yellow-800 mb-2">No Data</h3>
+          <p className="text-yellow-600">Please upload a PDF to view results.</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleDepartmentChange = (deptCode: string) => {
     setSelectedDepartment(deptCode);
@@ -476,7 +536,7 @@ const Result = () => {
                   }
                 >
                   {selectedDepartment
-                    ? `${resultsData[selectedDepartment].name} (${selectedDepartment})`
+                    ? `${resultsData[selectedDepartment].name}`
                     : "Choose a department..."}
                 </span>
                 <ChevronDown
@@ -495,9 +555,9 @@ const Result = () => {
                     className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0"
                   >
                     <div className="font-medium text-gray-900">{dept.name}</div>
-                    <div className="text-sm text-gray-500">
+                    {/* <div className="text-sm text-gray-500">
                       Department Code: {code}
-                    </div>
+                    </div> */}
                   </button>
                 ))}
               </div>
