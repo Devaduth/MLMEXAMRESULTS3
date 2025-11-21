@@ -143,7 +143,9 @@ const WelcomeScreen: React.FC = () => {
               </p>
               
               <p className="text-sm text-gray-500 mt-2">
-                Processing please wait...
+                Please wait your results are loading this may take 5-10 minutes… <br />
+                Our AI is doing some heavy lifting! <br />
+                The more you wait, the sharper the output we deliver.
               </p>
             </div>
           )}
