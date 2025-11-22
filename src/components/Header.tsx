@@ -16,8 +16,8 @@ const Header = () => {
     <div className="relative bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative">
         <div className="relative">
-          {/* Theme Switcher - Top Right */}
-          <div className="absolute right-0 top-0 z-30">
+          {/* Theme Switcher - Top Right on desktop, below logos on mobile */}
+          <div className="lg:absolute lg:right-0 lg:top-0 z-30 flex justify-end mb-3 lg:mb-0">
             <button
               onClick={toggleTheme}
               className="p-2.5 bg-gray-50 dark:bg-slate-800 rounded-lg hover:bg-indigo-50 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-900 transition-all duration-200 shadow-sm"
@@ -31,8 +31,8 @@ const Header = () => {
             </button>
           </div>
 
-          {/* Top Left Logos */}
-          <div className="absolute left-0 top-0 flex items-center gap-3">
+          {/* Top Left Logos - Hidden on mobile, shown on larger screens */}
+          <div className="hidden lg:flex absolute left-0 top-0 items-center gap-3">
             <img
               src="/images/accreditation.jpg"
               alt="Accreditation"
@@ -48,25 +48,44 @@ const Header = () => {
           {/* Center Content */}
           <div className="text-center">
             <div className="flex justify-center items-center mb-4">
-              <div className="flex flex-col items-center">
-                {/* Main Logo */}
+              <div className="flex flex-col items-center w-full">
+                {/* Mobile Logos Row - Only shown on mobile */}
+                <div className="flex lg:hidden items-center justify-center gap-2 sm:gap-3 mb-4 px-2">
+                  <img
+                    src="/images/accreditation.jpg"
+                    alt="Accreditation"
+                    className="h-10 sm:h-12 w-auto object-contain flex-shrink-0"
+                  />
+                  <img
+                    src="/images/mlm-logo.gif"
+                    alt="Mangalam College of Engineering"
+                    className="h-12 sm:h-14 w-auto flex-shrink-0"
+                  />
+                  <img
+                    src="/images/kirf.jpg"
+                    alt="KIRF"
+                    className="h-10 sm:h-12 w-auto object-contain flex-shrink-0"
+                  />
+                </div>
+
+                {/* Main Logo - Hidden on mobile (shown in mobile row above) */}
                 <img
                   src="/images/mlm-logo.gif"
                   alt="Mangalam College of Engineering"
-                  className="h-20 w-auto"
+                  className="hidden lg:block h-20 w-auto"
                 />
 
                 {/* University Name */}
-                <div className="flex items-center justify-center mt-4 bg-gradient-to-r from-gray-50 to-indigo-50/30 dark:from-slate-800 dark:to-indigo-950/20 px-5 py-2.5 rounded-lg border border-gray-100 dark:border-slate-700">
-                  <GraduationCap className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
-                  <p className="text-sm text-gray-700 dark:text-gray-300 font-inter font-medium">
+                <div className="flex items-center justify-center mt-4 bg-gradient-to-r from-gray-50 to-indigo-50/30 dark:from-slate-800 dark:to-indigo-950/20 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg border border-gray-100 dark:border-slate-700 max-w-full">
+                  <GraduationCap className="h-4 sm:h-5 w-4 sm:w-5 text-indigo-600 dark:text-indigo-400 mr-1.5 sm:mr-2 flex-shrink-0" />
+                  <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 font-inter font-medium truncate">
                     APJ Abdul Kalam Technological University
                   </p>
                 </div>
 
                 {/* Department Name */}
-                <div className="mt-3 bg-gradient-to-r from-slate-900 to-indigo-900 dark:from-slate-800 dark:to-indigo-950 text-white px-6 py-2.5 rounded-lg shadow-sm">
-                  <p className="font-semibold text-center font-poppins text-sm">
+                <div className="mt-3 bg-gradient-to-r from-slate-900 to-indigo-900 dark:from-slate-800 dark:to-indigo-950 text-white px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg shadow-sm max-w-full">
+                  <p className="font-semibold text-center font-poppins text-xs sm:text-sm">
                     Department of Computer Science & Engineering
                   </p>
                 </div>
@@ -75,10 +94,10 @@ const Header = () => {
 
             {/* Action Buttons */}
             {hasPDFData && (
-              <div className="flex justify-center gap-3 mt-6">
+              <div className="flex flex-col sm:flex-row justify-center gap-3 mt-6">
                 <button
                   onClick={handleClearData}
-                  className="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 text-white font-medium font-poppins hover:from-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-800 dark:hover:to-indigo-900 transition-all duration-200 rounded-lg shadow-sm"
+                  className="inline-flex items-center justify-center px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 text-white font-medium font-poppins hover:from-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-800 dark:hover:to-indigo-900 transition-all duration-200 rounded-lg shadow-sm"
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   <span>Upload New PDF</span>
@@ -86,7 +105,7 @@ const Header = () => {
                 
                 <button
                   onClick={handleClearData}
-                  className="inline-flex items-center px-6 py-2.5 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 font-medium font-poppins hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200 border border-gray-200 dark:border-slate-700 rounded-lg shadow-sm"
+                  className="inline-flex items-center justify-center px-6 py-2.5 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 font-medium font-poppins hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200 border border-gray-200 dark:border-slate-700 rounded-lg shadow-sm"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   <span>Clear Data</span>
