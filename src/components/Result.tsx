@@ -820,26 +820,26 @@ const Result = () => {
         </div>
 
         {selectedDepartment && (
-          <div className="mb-4 flex gap-4 justify-center">
+          <div className="mb-4 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-2">
             <button
               onClick={handleDownload}
-              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 text-white hover:from-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-800 dark:hover:to-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm transition-all duration-200"
+              className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 text-white hover:from-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-800 dark:hover:to-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm transition-all duration-200 text-sm sm:text-base"
               disabled={selectedStudents.size === 0}
             >
-              <Download className="h-5 w-5 mr-2" />
+              <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               Download Report
             </button>
             <button
               onClick={handleDownloadStudentList}
-              className="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 border border-gray-200 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm transition-all duration-200"
+              className="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 border border-gray-200 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm transition-all duration-200 text-sm sm:text-base"
               disabled={selectedStudents.size === 0}
             >
-              <Download className="h-5 w-5 mr-2" />
+              <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               Download Student List
             </button>
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 my-4 px-2 sm:px-0">
           <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-4">
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
@@ -868,8 +868,8 @@ const Result = () => {
           </div>
         </div>
         {downloadFormVisible && (
-          <div className="fixed inset-0 bg-gray-600 dark:bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-6 w-full max-w-md overflow-y-auto max-h-96">
+          <div className="fixed inset-0 bg-gray-600 dark:bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-4 sm:p-6 w-full max-w-md overflow-y-auto max-h-[90vh] rounded-lg">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Download Report</h3>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
@@ -939,7 +939,7 @@ const Result = () => {
         )}
 
         {selectedDepartment && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8 px-2 sm:px-0">
             <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 p-2.5 rounded-lg">
@@ -986,10 +986,10 @@ const Result = () => {
 
         {/* Supply Upload Section */}
         {selectedDepartment && (
-          <div className="mb-6">
+          <div className="mb-6 px-2 sm:px-0">
             <button
               onClick={() => setShowSupplyUpload(!showSupplyUpload)}
-              className="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 text-white font-medium font-poppins hover:from-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-800 dark:hover:to-indigo-900 transition-all duration-200 rounded-lg shadow-sm"
+              className="inline-flex items-center px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 text-white font-medium font-poppins hover:from-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-800 dark:hover:to-indigo-900 transition-all duration-200 rounded-lg shadow-sm text-sm sm:text-base"
             >
               <Upload className="h-4 w-4 mr-2" />
               {showSupplyUpload ? 'Hide Supply Upload' : 'Upload Supply Results'}
@@ -998,25 +998,25 @@ const Result = () => {
         )}
 
         {showSupplyUpload && selectedDepartment && (
-          <div className="mb-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm p-5">
-            <h3 className="text-lg font-semibold font-poppins text-gray-900 dark:text-gray-100 mb-2 flex items-center">
+          <div className="mb-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm p-4 sm:p-5 mx-2 sm:mx-0">
+            <h3 className="text-base sm:text-lg font-semibold font-poppins text-gray-900 dark:text-gray-100 mb-2 flex items-center flex-wrap">
               <Upload className="h-5 w-5 mr-2 text-indigo-600 dark:text-indigo-400" />
               Upload Supply Exam Results
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 font-inter mb-4">
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-inter mb-4">
               Upload a PDF file containing supply exam results. Grades for failed subjects will be automatically updated if students passed in the supply exam. Supply-updated grades will be marked with a green indicator.
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <input
                 type="file"
                 accept=".pdf"
                 onChange={handleSupplyFileChange}
-                className="block w-full text-sm text-gray-600 dark:text-gray-300 font-inter file:mr-3 file:py-2 file:px-4 file:border-0 file:text-sm file:font-medium file:bg-slate-900 dark:file:bg-slate-700 file:text-white hover:file:bg-slate-800 dark:hover:file:bg-slate-600 cursor-pointer file:transition-colors file:duration-200"
+                className="block w-full text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-inter file:mr-2 sm:file:mr-3 file:py-2 file:px-3 sm:file:px-4 file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-slate-900 dark:file:bg-slate-700 file:text-white hover:file:bg-slate-800 dark:hover:file:bg-slate-600 cursor-pointer file:transition-colors file:duration-200 file:rounded"
               />
               <button
                 onClick={handleSupplyUpload}
                 disabled={!supplyFile || supplyUploading}
-                className="px-6 py-2 bg-slate-900 dark:bg-slate-800 text-white font-medium font-poppins hover:bg-slate-800 dark:hover:bg-slate-700 disabled:bg-gray-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed transition-colors duration-200 whitespace-nowrap"
+                className="px-4 sm:px-6 py-2 bg-slate-900 dark:bg-slate-800 text-white font-medium font-poppins hover:bg-slate-800 dark:hover:bg-slate-700 disabled:bg-gray-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed transition-colors duration-200 whitespace-nowrap text-sm sm:text-base rounded"
               >
                 {supplyUploading ? 'Uploading...' : 'Merge Results'}
               </button>
@@ -1030,23 +1030,24 @@ const Result = () => {
         )}
 
         {selectedDepartment && selectedDepartment !== "ALL" && (
-          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-50 to-indigo-50/30 dark:from-slate-900 dark:to-indigo-950/20 px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-              <h3 className="text-lg font-semibold font-poppins text-gray-900 dark:text-white">
+          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden mx-2 sm:mx-0">
+            <div className="bg-gradient-to-r from-gray-50 to-indigo-50/30 dark:from-slate-900 dark:to-indigo-950/20 px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-slate-700">
+              <h3 className="text-base sm:text-lg font-semibold font-poppins text-gray-900 dark:text-white">
                 {resultsData[selectedDepartment].name}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 font-inter mt-1 flex items-center gap-4">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-inter mt-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
                 <span>📊 Students: {sortStudents(filterStudents(resultsData[selectedDepartment].students)).length}</span>
-                <span>•</span>
+                <span className="hidden sm:inline">•</span>
                 <span>📅 Academic Year: 2024-28 | Semester: 2</span>
               </p>
             </div>
 
-            <div className="relative max-h-[600px] overflow-y-auto scrollbar-thin">
-              <table className="w-full">
+            <div className="relative overflow-x-auto overflow-y-auto max-h-[600px] scrollbar-thin -mx-2 sm:mx-0">
+              <div className="inline-block min-w-full align-middle">
+              <table className="min-w-full w-full">
                 <thead className="bg-gray-50 dark:bg-slate-900 sticky top-0 z-10 border-b border-gray-200 dark:border-slate-700">
                   <tr>
-                    <th className="sticky left-0 top-0 bg-gray-50 dark:bg-slate-900 px-6 py-4 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-200 dark:border-slate-700 z-20">
+                    <th className="sticky left-0 top-0 bg-gray-50 dark:bg-slate-900 px-2 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-200 dark:border-slate-700 z-20 w-24 sm:w-auto min-w-[6rem] sm:min-w-[9rem]">
                       <input
                         type="checkbox"
                         onChange={(e) => {
@@ -1059,10 +1060,10 @@ const Result = () => {
                           setSelectedStudents(newSelected);
                         }}
                         checked={selectedStudents.size === sortStudents(filterStudents(resultsData[selectedDepartment].students)).length}
-                        className="w-4 h-4 text-gray-600 focus:ring-2 focus:ring-gray-500"
+                        className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 focus:ring-2 focus:ring-gray-500"
                       />
                     </th>
-                    <th className="sticky left-[150px] top-0 bg-gray-50 dark:bg-slate-900 px-6 py-4 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-200 dark:border-slate-700 z-20">
+                    <th className="sticky left-24 sm:left-[9rem] top-0 bg-gray-50 dark:bg-slate-900 px-2 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-200 dark:border-slate-700 z-20 min-w-[8rem] sm:min-w-[12rem]">
                       Name
                     </th>
                     {Object.entries(
@@ -1093,16 +1094,19 @@ const Result = () => {
                         key={student.registerNo}
                         className={index % 2 === 0 ? "bg-white dark:bg-slate-800" : "bg-gray-50 dark:bg-slate-800/50"}
                       >
-                        <td className="sticky left-0 bg-inherit px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-900 dark:text-blue-400 border-r border-gray-200 dark:border-slate-700">
-                          <input
-                            type="checkbox"
-                            checked={selectedStudents.has(student.registerNo)}
-                            onChange={() => handleStudentSelect(student.registerNo)}
-                          />
-                          {student.registerNo}
+                        <td className="sticky left-0 bg-inherit px-2 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium text-blue-900 dark:text-blue-400 border-r border-gray-200 dark:border-slate-700 w-24 sm:w-auto min-w-[6rem] sm:min-w-[9rem]">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
+                            <input
+                              type="checkbox"
+                              checked={selectedStudents.has(student.registerNo)}
+                              onChange={() => handleStudentSelect(student.registerNo)}
+                              className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0"
+                            />
+                            <span className="break-all text-[10px] sm:text-xs leading-tight">{student.registerNo}</span>
+                          </div>
                         </td>
-                        <td className="sticky left-[150px] bg-inherit px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-slate-700">
-                          {student.name || "N/A"}
+                        <td className="sticky left-24 sm:left-[9rem] bg-inherit px-2 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-slate-700 min-w-[8rem] sm:min-w-[12rem]">
+                          <span className="block truncate max-w-[7rem] sm:max-w-none">{student.name || "N/A"}</span>
                         </td>
                         {Object.keys(
                           resultsData[selectedDepartment].courses
@@ -1135,6 +1139,7 @@ const Result = () => {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         )}

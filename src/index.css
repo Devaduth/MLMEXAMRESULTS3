@@ -5,9 +5,21 @@
 @tailwind utilities;
 
 @layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
   body {
     @apply font-inter antialiased;
     @apply transition-colors duration-300;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
   }
   
   h1, h2, h3, h4, h5, h6 {

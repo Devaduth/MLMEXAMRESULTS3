@@ -52,14 +52,14 @@ const WelcomeScreen: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-900 flex items-center justify-center py-16 px-4 transition-colors duration-300">
+    <div className="bg-gray-50 dark:bg-slate-900 flex items-center justify-center py-8 sm:py-16 px-4 transition-colors duration-300 w-full overflow-x-hidden">
       <div className="max-w-4xl w-full">
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold font-poppins mb-4 text-gray-900 dark:text-white">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-poppins mb-3 sm:mb-4 text-gray-900 dark:text-white px-2">
             Exam Results Analysis
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 font-inter max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 font-inter max-w-2xl mx-auto px-4">
             Upload your PDF results and get instant analysis with AI-powered
             insights
           </p>

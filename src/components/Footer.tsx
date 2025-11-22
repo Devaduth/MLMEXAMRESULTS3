@@ -10,9 +10,9 @@ import {
 
 const Footer = () => {
   return (
-    <footer className="relative bg-slate-900 dark:bg-slate-950 text-white border-t border-slate-800 dark:border-slate-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+    <footer className="relative bg-slate-900 dark:bg-slate-950 text-white border-t border-slate-800 dark:border-slate-900 overflow-x-hidden w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">{" "}
           {/* Left Section - Institution Info */}
           <div className="text-center md:text-left">
             <h3 className="text-lg font-semibold font-poppins mb-3 text-white">
@@ -97,7 +97,7 @@ const Footer = () => {
                 <Github className="w-5 h-5 text-gray-300" />
               </a>
               <a
-                href="mailto:devaduth@example.com"
+                href="mailto:kmdevaduth@gmail.com"
                 className="bg-slate-800 dark:bg-slate-900 p-2.5 hover:bg-slate-700 dark:hover:bg-slate-800 transition-colors duration-200"
               >
                 <Mail className="w-5 h-5 text-gray-300" />
@@ -110,9 +110,15 @@ const Footer = () => {
               rel="noopener noreferrer"
               className="font-semibold font-poppins text-white hover:text-gray-300 transition-colors duration-200 inline-flex items-center gap-1"
             >
-              Devaduth
+              KM Devaduth
               <ExternalLink className="w-3 h-3" />
             </a>
+            <div>
+              <span className="text-gray-400 text-xs font-inter flex items-center gap-1 justify-center md:justify-end">
+                BTech CSE 2024-2028 Batch,<br />
+                Mangalam College of Engineering
+              </span>
+            </div>
           </div>
         </div>
 
