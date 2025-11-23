@@ -1,12 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Upload, FileText, Zap, Shield, TrendingUp } from "lucide-react";
 import { useResults } from "../context/ResultsContext";
 import { GeminiDebugger } from "./GeminiDebugger";
+import { createStatusMessageCycler, StatusCycler } from "../utils/statusMessageCycler";
 
 const WelcomeScreen: React.FC = () => {
   const { uploadPDF, isLoading, uploadProgress, error } = useResults();
   const [isDragging, setIsDragging] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [cyclingMessage, setCyclingMessage] = useState<string>("");
+  const [simulatedProgress, setSimulatedProgress] = useState<number>(0);
+  const statusCyclerRef = useRef<StatusCycler | null>(null);
+
+  // Initialize status cycler
+  useEffect(() => {
+    statusCyclerRef.current = createStatusMessageCycler(
+      (message) => setCyclingMessage(message),
+      (progress) => setSimulatedProgress(progress),
+      {
+        minInterval: 6000, // 6 seconds
+        maxInterval: 10000, // 10 seconds
+        randomize: true,
+      }
+    );
+
+    return () => {
+      statusCyclerRef.current?.stop();
+    };
+  }, []);
+
+  // Start/stop cycler based on loading state
+  useEffect(() => {
+    if (isLoading) {
+      statusCyclerRef.current?.start();
+    } else {
+      statusCyclerRef.current?.stop();
+      setCyclingMessage("");
+      setSimulatedProgress(0);
+    }
+  }, [isLoading]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -208,25 +240,25 @@ const WelcomeScreen: React.FC = () => {
               </div>
 
               <h3 className="text-2xl font-semibold font-poppins text-gray-900 dark:text-gray-100 mb-3">
-                {uploadProgress.message}
+                {cyclingMessage || uploadProgress.message}
               </h3>
 
               <div className="max-w-md mx-auto bg-gray-200 dark:bg-slate-700 h-3 mb-4 overflow-hidden">
                 <div
                   className="bg-slate-900 dark:bg-gray-300 h-full transition-all duration-500"
-                  style={{ width: `${uploadProgress.percent}%` }}
+                  style={{ width: `${simulatedProgress}%` }}
                 ></div>
               </div>
 
               <p className="text-xl font-medium font-poppins text-gray-700 dark:text-gray-300 mb-4">
-                {uploadProgress.percent}% Complete
+                {simulatedProgress}% Complete
               </p>
 
               <div className="bg-gray-100 dark:bg-slate-800 p-5 max-w-lg mx-auto border border-gray-200 dark:border-slate-700">
                 <p className="text-sm text-gray-600 dark:text-gray-400 font-inter leading-relaxed">
                   <strong>Our AI is analyzing your document with precision.</strong>
                   <p className="text-xs text-gray-500">
-                    Please wait this may take 5–10 minutes.
+                    Please wait this may take 2–3 minutes.
                   </p>
                   <p className="text-xs">As a wise man once said, “Good things takes time.”</p>
                   <br />
