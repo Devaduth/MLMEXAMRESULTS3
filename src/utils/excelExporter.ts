@@ -31,19 +31,19 @@ interface ExcelExportData {
 }
 
 /**
- * Apply dark header background and white bold text
+ * Apply white header background and black bold text
  */
 const applyHeaderStyle = (cell: ExcelJS.Cell) => {
   cell.fill = {
     type: 'pattern',
     pattern: 'solid',
-    fgColor: { argb: 'FF1F2937' }, // dark gray-800
+    fgColor: { argb: 'FFFFFFFF' }, // white
   };
   cell.font = {
     name: 'Calibri',
     size: 14,
     bold: true,
-    color: { argb: 'FFFFFFFF' }, // white
+    color: { argb: 'FF000000' }, // black
   };
   cell.alignment = {
     vertical: 'middle',
@@ -70,7 +70,7 @@ const applyTableHeaderStyle = (cell: ExcelJS.Cell) => {
     name: 'Calibri',
     size: 11,
     bold: true,
-    color: { argb: 'FF1F2937' },
+    color: { argb: 'FF000000' },
   };
   cell.alignment = {
     vertical: 'middle',
@@ -132,25 +132,48 @@ export const exportStyledExcel = async (data: ExcelExportData, filename: string 
 
   let currentRow = 1;
 
+  // ==================== ADD LOGO ====================
+  
+  try {
+    // Fetch the logo image
+    const logoResponse = await fetch('/images/emblem.jpg');
+    const logoBlob = await logoResponse.blob();
+    const logoArrayBuffer = await logoBlob.arrayBuffer();
+    
+    // Add image to workbook
+    const logoId = workbook.addImage({
+      buffer: logoArrayBuffer,
+      extension: 'jpeg',
+    });
+    
+    // Add logo to worksheet (top-left corner, spanning rows 1-3, column 1)
+    worksheet.addImage(logoId, {
+      tl: { col: 0, row: 0 }, // top-left at column A, row 1
+      ext: { width: 80, height: 80 }, // 80x80 pixels
+    });
+  } catch (error) {
+    console.warn('Could not load logo:', error);
+  }
+
   // ==================== SECTION 1: TOP 3 HEADER ROWS ====================
   
-  // Row 1: College Name
-  worksheet.mergeCells(currentRow, 1, currentRow, 8);
-  const collegeCell = worksheet.getCell(currentRow, 1);
+  // Row 1: College Name (offset to make room for logo)
+  worksheet.mergeCells(currentRow, 2, currentRow, 8);
+  const collegeCell = worksheet.getCell(currentRow, 2);
   collegeCell.value = data.collegeName;
   applyHeaderStyle(collegeCell);
   currentRow++;
 
   // Row 2: Department Name
-  worksheet.mergeCells(currentRow, 1, currentRow, 8);
-  const deptCell = worksheet.getCell(currentRow, 1);
+  worksheet.mergeCells(currentRow, 2, currentRow, 8);
+  const deptCell = worksheet.getCell(currentRow, 2);
   deptCell.value = data.departmentName;
   applyHeaderStyle(deptCell);
   currentRow++;
 
   // Row 3: Result Heading
-  worksheet.mergeCells(currentRow, 1, currentRow, 8);
-  const headingCell = worksheet.getCell(currentRow, 1);
+  worksheet.mergeCells(currentRow, 2, currentRow, 8);
+  const headingCell = worksheet.getCell(currentRow, 2);
   headingCell.value = data.resultHeading;
   applyHeaderStyle(headingCell);
   currentRow++;
@@ -171,23 +194,20 @@ export const exportStyledExcel = async (data: ExcelExportData, filename: string 
   ];
 
   classDetailsData.forEach(({ label, value }) => {
-    // Merge cells for label (columns 1-4)
-    worksheet.mergeCells(currentRow, 1, currentRow, 4);
+    // Merge cells for label (columns 1-3) - narrower label width
+    worksheet.mergeCells(currentRow, 1, currentRow, 3);
     const labelCell = worksheet.getCell(currentRow, 1);
     labelCell.value = label;
-    applyCellStyle(labelCell, { bold: true, alignment: { horizontal: 'left' } });
+    applyCellStyle(labelCell, { bold: true, alignment: { horizontal: 'left' }, wrapText: true });
 
-    // Merge cells for value (columns 5-8)
-    worksheet.mergeCells(currentRow, 5, currentRow, 8);
-    const valueCell = worksheet.getCell(currentRow, 5);
+    // Merge cells for value (columns 4-6) - narrower values section
+    worksheet.mergeCells(currentRow, 4, currentRow, 6);
+    const valueCell = worksheet.getCell(currentRow, 4);
     valueCell.value = value;
-    applyCellStyle(valueCell, { alignment: { horizontal: 'right' } });
+    applyCellStyle(valueCell, { alignment: { horizontal: 'left' } });
 
     currentRow++;
   });
-
-  // Empty row for spacing
-  currentRow++;
 
   // ==================== SECTION 3: SUBJECT-WISE TABLE ====================
   
@@ -239,9 +259,6 @@ export const exportStyledExcel = async (data: ExcelExportData, filename: string 
     currentRow++;
   });
 
-  // Empty row for spacing
-  currentRow++;
-
   // ==================== SECTION 4: FAILURE COUNTS ====================
   
   const failureData = [
@@ -253,15 +270,15 @@ export const exportStyledExcel = async (data: ExcelExportData, filename: string 
   ];
 
   failureData.forEach(({ label, value }) => {
-    worksheet.mergeCells(currentRow, 1, currentRow, 6);
+    worksheet.mergeCells(currentRow, 1, currentRow, 4);
     const labelCell = worksheet.getCell(currentRow, 1);
     labelCell.value = label;
-    applyCellStyle(labelCell, { bold: true, alignment: { horizontal: 'left' } });
+    applyCellStyle(labelCell, { bold: true, alignment: { horizontal: 'left' }, wrapText: true });
 
-    worksheet.mergeCells(currentRow, 7, currentRow, 8);
-    const valueCell = worksheet.getCell(currentRow, 7);
+    worksheet.mergeCells(currentRow, 5, currentRow, 6);
+    const valueCell = worksheet.getCell(currentRow, 5);
     valueCell.value = value;
-    applyCellStyle(valueCell, { alignment: { horizontal: 'right' } });
+    applyCellStyle(valueCell, { alignment: { horizontal: 'left' } });
 
     currentRow++;
   });
@@ -357,22 +374,45 @@ export const exportStudentListExcel = async (data: StudentListExportData, filena
   let currentRow = 1;
   const totalCols = 3 + data.courseCodes.length + 1; // Sl, Reg, Name + courses + supplies count
 
+  // ==================== ADD LOGO ====================
+  
+  try {
+    // Fetch the logo image
+    const logoResponse = await fetch('/images/emblem.jpg');
+    const logoBlob = await logoResponse.blob();
+    const logoArrayBuffer = await logoBlob.arrayBuffer();
+    
+    // Add image to workbook
+    const logoId = workbook.addImage({
+      buffer: logoArrayBuffer,
+      extension: 'jpeg',
+    });
+    
+    // Add logo to worksheet (top-left corner, spanning rows 1-3, column 1)
+    worksheet.addImage(logoId, {
+      tl: { col: 0, row: 0 }, // top-left at column A, row 1
+      ext: { width: 80, height: 80 }, // 80x80 pixels
+    });
+  } catch (error) {
+    console.warn('Could not load logo:', error);
+  }
+
   // ==================== HEADER ROWS ====================
   
-  worksheet.mergeCells(currentRow, 1, currentRow, totalCols);
-  const collegeCell = worksheet.getCell(currentRow, 1);
+  worksheet.mergeCells(currentRow, 2, currentRow, totalCols);
+  const collegeCell = worksheet.getCell(currentRow, 2);
   collegeCell.value = data.collegeName;
   applyHeaderStyle(collegeCell);
   currentRow++;
 
-  worksheet.mergeCells(currentRow, 1, currentRow, totalCols);
-  const deptCell = worksheet.getCell(currentRow, 1);
+  worksheet.mergeCells(currentRow, 2, currentRow, totalCols);
+  const deptCell = worksheet.getCell(currentRow, 2);
   deptCell.value = data.departmentName;
   applyHeaderStyle(deptCell);
   currentRow++;
 
-  worksheet.mergeCells(currentRow, 1, currentRow, totalCols);
-  const headingCell = worksheet.getCell(currentRow, 1);
+  worksheet.mergeCells(currentRow, 2, currentRow, totalCols);
+  const headingCell = worksheet.getCell(currentRow, 2);
   headingCell.value = data.resultHeading;
   applyHeaderStyle(headingCell);
   currentRow++;
@@ -391,21 +431,20 @@ export const exportStudentListExcel = async (data: StudentListExportData, filena
   ];
 
   classDetailsData.forEach(({ label, value }) => {
-    const midCol = Math.ceil(totalCols / 2);
-    worksheet.mergeCells(currentRow, 1, currentRow, midCol);
+    // Calculate better split: 40% for label, 60% for value
+    const labelEndCol = Math.floor(totalCols * 0.4);
+    worksheet.mergeCells(currentRow, 1, currentRow, labelEndCol);
     const labelCell = worksheet.getCell(currentRow, 1);
     labelCell.value = label;
-    applyCellStyle(labelCell, { bold: true, alignment: { horizontal: 'left' } });
+    applyCellStyle(labelCell, { bold: true, alignment: { horizontal: 'left' }, wrapText: true });
 
-    worksheet.mergeCells(currentRow, midCol + 1, currentRow, totalCols);
-    const valueCell = worksheet.getCell(currentRow, midCol + 1);
+    worksheet.mergeCells(currentRow, labelEndCol + 1, currentRow, totalCols);
+    const valueCell = worksheet.getCell(currentRow, labelEndCol + 1);
     valueCell.value = value;
-    applyCellStyle(valueCell, { alignment: { horizontal: 'right' } });
+    applyCellStyle(valueCell, { alignment: { horizontal: 'left' } });
 
     currentRow++;
   });
-
-  currentRow++;
 
   // ==================== STUDENT TABLE ====================
   
@@ -514,8 +553,6 @@ export const exportStudentListExcel = async (data: StudentListExportData, filena
     
     currentRow++;
   });
-
-  currentRow++;
 
   // ==================== SUBJECT TABLE ====================
   
