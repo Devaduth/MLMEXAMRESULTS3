@@ -12,6 +12,7 @@ import GradeLegend from "./GradeLegend";
 import ResultCharts from "./ResultCharts";
 import { jsPDF } from "jspdf";
 import * as XLSX from "xlsx";
+import { exportStyledExcel, exportStudentListExcel } from "../utils/excelExporter";
 
 interface StudentResult {
   registerNo: string;
@@ -485,15 +486,141 @@ const Result = () => {
     setDownloadFormVisible(true);
   };
 
-  const exportToExcel = () => {
-    const content = downloadType === "summary" ? generateReportContent() : generateStudentListContent();
-    const lines = content.split("\n");
-    const wb = XLSX.utils.book_new();
-    const wsData = lines.map(line => line.split("\t"));
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    XLSX.utils.book_append_sheet(wb, ws, "ResultAnalysis");
-    XLSX.writeFile(wb, `${downloadTitle || "ResultAnalysis"}.xlsx`);
-    setDownloadFormVisible(false);
+  const exportToExcel = async () => {
+    if (!selectedDepartment || selectedStudents.size === 0) return;
+
+    const dept = resultsData[selectedDepartment];
+    const filteredStudents = sortStudents(filterStudents(dept.students)).filter(s =>
+      selectedStudents.has(s.registerNo)
+    );
+    const totalSelected = filteredStudents.length;
+    const passedSelected = filteredStudents.filter(s =>
+      Object.values(s.courses).every(g => !failingGrades.includes(g))
+    ).length;
+    const passPercentage = totalSelected > 0 ? Number(((passedSelected / totalSelected) * 100).toFixed(2)) : 0;
+
+    const currentMonth = new Date().toLocaleString('default', { month: 'long' }).toUpperCase();
+
+    try {
+      if (downloadType === "summary") {
+        // Prepare subject-wise data
+        const subjects = Object.entries(dept.courses).map(([code, name], index) => {
+          const total = filteredStudents.length;
+          const passed = filteredStudents.filter(s => !failingGrades.includes(s.courses[code] || "N/A")).length;
+          const failed = total - passed;
+          const percentage = total > 0 ? Number(((passed / total) * 100).toFixed(2)) : 0;
+          const teacher = teachers[code] || "Staff Name";
+          
+          return {
+            slNo: index + 1,
+            code,
+            name,
+            staffName: teacher,
+            totalStudents: total,
+            passed,
+            failed,
+            passPercentage: percentage,
+          };
+        });
+
+        // Calculate failure counts
+        const failCounts = {
+          failed1: filteredStudents.filter(s => countFails(s) === 1).length,
+          failed2: filteredStudents.filter(s => countFails(s) === 2).length,
+          failed3: filteredStudents.filter(s => countFails(s) === 3).length,
+          failedMoreThan3: filteredStudents.filter(s => countFails(s) > 3).length,
+          failedAll: filteredStudents.filter(s => countFails(s) === Object.keys(dept.courses).length).length,
+        };
+
+        await exportStyledExcel({
+          collegeName: 'MANGALAM COLLEGE OF ENGINEERING',
+          departmentName: `DEPARTMENT OF ${dept.name.toUpperCase()}`,
+          resultHeading: `UNIVERSITY RESULT ANALYSIS ${currentMonth} 2025`,
+          classSem: classSem || 'Not specified',
+          academicSemester: 'JAN 2025 - MAY 2025',
+          totalStudents: totalSelected,
+          totalCleared: passedSelected,
+          passPercentageS2WithWH: passPercentage,
+          passPercentageS2WithoutWH: passPercentage,
+          overallPassPercentage: passPercentage,
+          subjects,
+          failureCounts: failCounts,
+        }, `${downloadTitle || "ResultAnalysis"}.xlsx`);
+
+      } else {
+        // Student List Export
+        const courseCodes = Object.keys(dept.courses);
+        
+        // Compute stats per course
+        const passCounts: number[] = [];
+        const failureCounts: number[] = [];
+        const withheldCounts: number[] = [];
+        const absentCounts: number[] = [];
+        const passPercentages: number[] = [];
+
+        courseCodes.forEach(code => {
+          const passed = filteredStudents.filter(s => {
+            const grade = s.courses[code] || "N/A";
+            return !failingGrades.includes(grade);
+          }).length;
+          const failed = filteredStudents.filter(s => s.courses[code] === "F").length;
+          const withheld = filteredStudents.filter(s => s.courses[code] === "Withheld").length;
+          const absent = filteredStudents.filter(s => s.courses[code] === "Absent").length;
+          const passPerc = totalSelected > 0 ? Number(((passed / totalSelected) * 100).toFixed(2)) : 0;
+
+          passCounts.push(passed);
+          failureCounts.push(failed);
+          withheldCounts.push(withheld);
+          absentCounts.push(absent);
+          passPercentages.push(passPerc);
+        });
+
+        // Prepare student data
+        const studentsData = filteredStudents.map((student, index) => ({
+          slNo: index + 1,
+          registerNo: student.registerNo,
+          name: student.name || "N/A",
+          grades: courseCodes.map(code => student.courses[code] || "N/A"),
+          suppliesCount: countFails(student),
+        }));
+
+        // Prepare subject data
+        const subjects = Object.entries(dept.courses).map(([code, name], index) => ({
+          slNo: index + 1,
+          code,
+          name,
+          staffName: teachers[code] || "Staff Name",
+          passPercentage: passPercentages[index],
+        }));
+
+        await exportStudentListExcel({
+          collegeName: 'MANGALAM COLLEGE OF ENGINEERING',
+          departmentName: `DEPARTMENT OF ${dept.name.toUpperCase()}`,
+          resultHeading: `UNIVERSITY RESULT ANALYSIS ${currentMonth} 2025`,
+          classSem: classSem || 'Not specified',
+          academicSemester: 'JAN 2025 - MAY 2025',
+          totalStudents: totalSelected,
+          totalCleared: passedSelected,
+          passPercentageS2: passPercentage,
+          overallPassPercentage: passPercentage,
+          courseCodes,
+          students: studentsData,
+          summaryStats: {
+            passCounts,
+            failureCounts,
+            withheldCounts,
+            absentCounts,
+            passPercentages,
+          },
+          subjects,
+        }, `${downloadTitle || "StudentList"}.xlsx`);
+      }
+
+      setDownloadFormVisible(false);
+    } catch (error) {
+      console.error('Excel export failed:', error);
+      alert('Failed to export Excel file. Please try again.');
+    }
   };
 
   const exportToPDF = () => {
