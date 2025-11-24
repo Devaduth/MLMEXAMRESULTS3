@@ -31,7 +31,7 @@ interface ExcelExportData {
 }
 
 /**
- * Apply white header background and black bold text
+ * Apply white header background and black bold text (no borders)
  */
 const applyHeaderStyle = (cell: ExcelJS.Cell) => {
   cell.fill = {
@@ -49,12 +49,7 @@ const applyHeaderStyle = (cell: ExcelJS.Cell) => {
     vertical: 'middle',
     horizontal: 'center',
   };
-  cell.border = {
-    top: { style: 'thin', color: { argb: 'FF000000' } },
-    left: { style: 'thin', color: { argb: 'FF000000' } },
-    bottom: { style: 'thin', color: { argb: 'FF000000' } },
-    right: { style: 'thin', color: { argb: 'FF000000' } },
-  };
+  // No borders for header cells
 };
 
 /**
@@ -158,22 +153,22 @@ export const exportStyledExcel = async (data: ExcelExportData, filename: string 
   // ==================== SECTION 1: TOP 3 HEADER ROWS ====================
   
   // Row 1: College Name (offset to make room for logo)
-  worksheet.mergeCells(currentRow, 2, currentRow, 8);
-  const collegeCell = worksheet.getCell(currentRow, 2);
+  worksheet.mergeCells(currentRow, 1, currentRow, 8);
+  const collegeCell = worksheet.getCell(currentRow, 1);
   collegeCell.value = data.collegeName;
   applyHeaderStyle(collegeCell);
   currentRow++;
 
   // Row 2: Department Name
-  worksheet.mergeCells(currentRow, 2, currentRow, 8);
-  const deptCell = worksheet.getCell(currentRow, 2);
+  worksheet.mergeCells(currentRow, 1, currentRow, 8);
+  const deptCell = worksheet.getCell(currentRow, 1);
   deptCell.value = data.departmentName;
   applyHeaderStyle(deptCell);
   currentRow++;
 
   // Row 3: Result Heading
-  worksheet.mergeCells(currentRow, 2, currentRow, 8);
-  const headingCell = worksheet.getCell(currentRow, 2);
+  worksheet.mergeCells(currentRow, 1, currentRow, 8);
+  const headingCell = worksheet.getCell(currentRow, 1);
   headingCell.value = data.resultHeading;
   applyHeaderStyle(headingCell);
   currentRow++;
@@ -399,20 +394,20 @@ export const exportStudentListExcel = async (data: StudentListExportData, filena
 
   // ==================== HEADER ROWS ====================
   
-  worksheet.mergeCells(currentRow, 2, currentRow, totalCols);
-  const collegeCell = worksheet.getCell(currentRow, 2);
+  worksheet.mergeCells(currentRow, 1, currentRow, totalCols);
+  const collegeCell = worksheet.getCell(currentRow, 1);
   collegeCell.value = data.collegeName;
   applyHeaderStyle(collegeCell);
   currentRow++;
 
-  worksheet.mergeCells(currentRow, 2, currentRow, totalCols);
-  const deptCell = worksheet.getCell(currentRow, 2);
+  worksheet.mergeCells(currentRow, 1, currentRow, totalCols);
+  const deptCell = worksheet.getCell(currentRow, 1);
   deptCell.value = data.departmentName;
   applyHeaderStyle(deptCell);
   currentRow++;
 
-  worksheet.mergeCells(currentRow, 2, currentRow, totalCols);
-  const headingCell = worksheet.getCell(currentRow, 2);
+  worksheet.mergeCells(currentRow, 1, currentRow, totalCols);
+  const headingCell = worksheet.getCell(currentRow, 1);
   headingCell.value = data.resultHeading;
   applyHeaderStyle(headingCell);
   currentRow++;
