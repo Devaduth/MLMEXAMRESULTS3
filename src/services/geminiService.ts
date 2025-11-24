@@ -3,13 +3,6 @@ import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 // Initialize the Gemini API client
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-console.log('🔑 Gemini API Key status:', API_KEY ? `Loaded (${API_KEY.substring(0, 10)}...)` : 'NOT FOUND');
-
-if (!API_KEY) {
-  console.error('⚠️ VITE_GEMINI_API_KEY not found in environment variables');
-  console.error('💡 Make sure you have a .env file with VITE_GEMINI_API_KEY=your_key');
-}
-
 const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 export interface GeminiConfig {
@@ -20,123 +13,124 @@ export interface GeminiConfig {
 
 class GeminiService {
   private model: GenerativeModel | null = null;
+  private maxRetries = 3;
+  private retryDelay = 2000; // 2 seconds
 
   constructor() {
     if (genAI) {
-      // Try different model names - Gemini API model naming can vary
-      const modelNames = [
-        'models/gemini-1.5-pro',
-        'models/gemini-1.5-flash', 
-        'models/gemini-pro',
-        'models/gemini-1.5-pro',
-        'models/gemini-pro'
-      ];
-      
-      // Try the first model name
       try {
         this.model = genAI.getGenerativeModel({
           model: 'models/gemini-2.5-pro',
           generationConfig: {
             temperature: 0.1,
-            maxOutputTokens: 65536, // 64K tokens for Pro model - handles large responses
+            maxOutputTokens: 65536,
           },
         });
-        console.log('✅ Gemini model initialized: gemini-1.5-pro-latest with 65536 max output tokens');
       } catch (error) {
-        console.error('❌ Failed to initialize Gemini model:', error);
+        // Fallback to gemini-1.5-pro if 2.5-pro fails
+        try {
+          this.model = genAI.getGenerativeModel({
+            model: 'models/gemini-1.5-pro',
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 65536,
+            },
+          });
+        } catch (fallbackError) {
+          // Last resort: use gemini-1.5-flash
+          this.model = genAI.getGenerativeModel({
+            model: 'models/gemini-1.5-flash',
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 32768,
+            },
+          });
+        }
       }
-    } else {
-      console.error('❌ Failed to initialize Gemini - API key missing');
     }
   }
 
   /**
-   * Parse university results PDF using Gemini AI
+   * Retry helper with exponential backoff
+   */
+  private async retryWithBackoff<T>(
+    fn: () => Promise<T>,
+    retries = this.maxRetries
+  ): Promise<T> {
+    try {
+      return await fn();
+    } catch (error: any) {
+      if (retries === 0) {
+        throw error;
+      }
+
+      // Check if it's a network error that should be retried
+      const isNetworkError = 
+        error.message?.includes('fetch') ||
+        error.message?.includes('network') ||
+        error.message?.includes('timeout') ||
+        error.status === 503 ||
+        error.status === 504;
+
+      if (!isNetworkError) {
+        throw error; // Don't retry non-network errors
+      }
+
+      // Wait before retrying (exponential backoff)
+      const delay = this.retryDelay * (this.maxRetries - retries + 1);
+      await new Promise(resolve => setTimeout(resolve, delay));
+
+      return this.retryWithBackoff(fn, retries - 1);
+    }
+  }
+
+  /**
+   * Parse university results PDF using Gemini AI with retry logic
    */
   async parseUniversityPDF(pdfText: string): Promise<string> {
     if (!this.model) {
       throw new Error('Gemini API key not configured. Please add VITE_GEMINI_API_KEY to your .env file');
     }
 
-    // Check text length (gemini-1.5-pro supports ~1M tokens = ~4M characters)
-    const maxChars = 3000000; // Conservative limit for Gemini 1.5 Pro
+    const maxChars = 3000000;
     if (pdfText.length > maxChars) {
-      console.warn(`⚠️ PDF text is very long (${pdfText.length} chars). May exceed context window.`);
-      console.warn('Consider splitting into smaller chunks or using a summary approach.');
+      throw new Error('PDF text is too long. Please try with a smaller PDF.');
     }
 
-    try {
-      const prompt = this.buildParsingPrompt(pdfText);
-      
-      console.log('📤 Sending PDF text to Gemini API...');
-      console.log(`📊 Text length: ${pdfText.length} characters (~${Math.ceil(pdfText.length / 4)} tokens)`);
-      console.log(`📝 Prompt length: ${prompt.length} characters`);
-      console.log('🔍 First 500 chars of prompt:', prompt.substring(0, 500));
-      console.log('🔍 Last 300 chars of PDF text:', pdfText.substring(pdfText.length - 300));
-      
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      
-      // Log the full response structure to debug
-      console.log('📦 Raw response object:', {
-        candidates: response.candidates?.length || 0,
-        text: response.text ? 'Available' : 'Missing',
-        promptFeedback: response.promptFeedback,
-        finishReason: response.candidates?.[0]?.finishReason,
-      });
-      
-      // Check for safety blocks
-      if (response.promptFeedback?.blockReason) {
-        console.error('❌ Response was blocked:', response.promptFeedback.blockReason);
-        throw new Error(`Content was blocked by Gemini: ${response.promptFeedback.blockReason}`);
-      }
-      
-      // Check if response was truncated
-      const finishReason = response.candidates?.[0]?.finishReason;
-      if (finishReason === 'MAX_TOKENS' || finishReason === 'STOP') {
-        console.warn('⚠️ Response finish reason:', finishReason);
-        if (finishReason === 'MAX_TOKENS') {
-          console.warn('⚠️ Response was truncated due to token limit. Attempting to handle incomplete JSON...');
+    return this.retryWithBackoff(async () => {
+      try {
+        const prompt = this.buildParsingPrompt(pdfText);
+        
+        const result = await this.model!.generateContent(prompt);
+        const response = await result.response;
+        
+        // Check for safety blocks
+        if (response.promptFeedback?.blockReason) {
+          throw new Error(`Content was blocked by Gemini: ${response.promptFeedback.blockReason}`);
         }
-      }
-      
-      const text = response.text();
+        
+        const text = response.text();
 
-      console.log('✅ Received response from Gemini API');
-      console.log('Response length:', text.length, 'characters');
-      
-      if (!text || text.trim().length === 0) {
-        console.error('❌ Gemini returned empty response');
-        console.error('Response object:', response);
-        throw new Error('Gemini returned an empty response. This might be due to content filtering or API limits.');
+        if (!text || text.trim().length === 0) {
+          throw new Error('Gemini returned an empty response. This might be due to content filtering or API limits.');
+        }
+        
+        return text;
+      } catch (error: any) {
+        // Enhanced error messages for mobile users
+        if (error.message?.includes('Failed to fetch')) {
+          throw new Error('Network connection issue. Please check your internet connection and try again.');
+        } else if (error.message?.includes('API_KEY_INVALID') || error.status === 400) {
+          throw new Error('Invalid API configuration. Please contact support.');
+        } else if (error.message?.includes('RESOURCE_EXHAUSTED') || error.status === 429) {
+          throw new Error('Service is temporarily busy. Please try again in a few minutes.');
+        } else if (error.status === 503 || error.status === 504) {
+          throw new Error('Service temporarily unavailable. Retrying...');
+        }
+        
+        throw error;
       }
-      
-      console.log('First 500 characters of response:', text.substring(0, 500));
-      
-      return text;
-    } catch (error: any) {
-      console.error('❌ Gemini API Error:', error);
-      console.error('Error details:', {
-        message: error.message,
-        name: error.name,
-        status: error.status,
-        statusText: error.statusText,
-      });
-      
-      if (error.message?.includes('API_KEY_INVALID') || error.status === 400) {
-        throw new Error('Invalid Gemini API key. Please check your VITE_GEMINI_API_KEY in .env file');
-      } else if (error.message?.includes('RESOURCE_EXHAUSTED') || error.status === 429) {
-        throw new Error('Gemini API quota exceeded. Please try again later or check your quota at https://aistudio.google.com/');
-      } else if (error.message?.includes('INVALID_ARGUMENT') || error.status === 400) {
-        throw new Error('Invalid request format. The PDF might be too corrupted to parse');
-      } else if (error.message?.includes('PERMISSION_DENIED') || error.status === 403) {
-        throw new Error('API key does not have permission. Check API key restrictions in Google AI Studio');
-      } else if (error.name === 'TypeError' && error.message?.includes('fetch')) {
-        throw new Error('Network error: Cannot connect to Gemini API. Check your internet connection or firewall settings');
-      }
-      
-      throw new Error(`Gemini API Error: ${error.message || 'Unknown error'}`);
-    }
+    });
   }
 
   /**
@@ -164,20 +158,17 @@ JSON:`;
   private attemptFixIncompleteJSON(json: string): string {
     let fixed = json.trim();
     
-    console.log('🔧 Starting JSON repair...');
-    
     // Remove incomplete property/value at the end
     const incompletePatterns = [
-      /,\s*"[^"]*":\s*"[^"]*$/,  // Incomplete string value
-      /,\s*"[^"]*":\s*$/,         // Property with no value
-      /,\s*"[^"]*$/,              // Incomplete property name
-      /:\s*"[^"]*$/,              // Incomplete value after colon
+      /,\s*"[^"]*":\s*"[^"]*$/,
+      /,\s*"[^"]*":\s*$/,
+      /,\s*"[^"]*$/,
+      /:\s*"[^"]*$/,
     ];
     
     for (const pattern of incompletePatterns) {
       if (pattern.test(fixed)) {
         fixed = fixed.replace(pattern, '');
-        console.log(`🔧 Removed incomplete pattern`);
         break;
       }
     }
@@ -201,8 +192,6 @@ JSON:`;
       fixed += ']';
     }
     
-    console.log(`✅ Added ${bracesToAdd} braces and ${bracketsToAdd} brackets`);
-    
     return fixed;
   }
 
@@ -210,23 +199,16 @@ JSON:`;
    * Parse large PDF by splitting into chunks and combining results
    */
   async parseUniversityPDFInChunks(pdfText: string): Promise<string> {
-    // Split by department sections (look for department headers)
-    const chunkSize = 6000; // Further reduced to 6K chars to completely avoid MAX_TOKENS
+    const chunkSize = 6000;
     const chunks: string[] = [];
-    
-    console.log(`📦 Splitting PDF into chunks (${pdfText.length} chars total)`);
     
     for (let i = 0; i < pdfText.length; i += chunkSize) {
       chunks.push(pdfText.substring(i, i + chunkSize));
     }
     
-    console.log(`📦 Created ${chunks.length} chunks`);
-    
     const allResults: any[] = [];
     
     for (let i = 0; i < chunks.length; i++) {
-      console.log(`🔄 Processing chunk ${i + 1}/${chunks.length}...`);
-      
       const prompt = `Extract exam results to JSON. Format: [{"name":"DEPT","code":"XX","students":[{"registerNo":"XXX","courses":{"CODE":"GRADE"}}]}]
 NO markdown. Skip incomplete records.
 
@@ -236,35 +218,20 @@ ${chunks[i]}
 JSON:`;
 
       try {
-        const result = await this.model!.generateContent(prompt);
-        const response = await result.response;
-        
-        // Log response details
-        const finishReason = response.candidates?.[0]?.finishReason;
-        const safetyRatings = response.candidates?.[0]?.safetyRatings;
-        
-        console.log(`📦 Chunk ${i + 1} response details:`, {
-          finishReason,
-          hasText: !!response.text,
-          promptFeedback: response.promptFeedback,
-          blocked: response.promptFeedback?.blockReason
+        // Use retry logic for each chunk
+        const text = await this.retryWithBackoff(async () => {
+          const result = await this.model!.generateContent(prompt);
+          const response = await result.response;
+          return response.text();
         });
         
-        const text = response.text();
-        
-        console.log(`✅ Chunk ${i + 1} response: ${text.length} chars`);
-        console.log(`📝 First 200 chars:`, text.substring(0, 200));
-        
         if (!text || text.trim().length === 0) {
-          console.warn(`⚠️ Chunk ${i + 1} returned empty response, skipping...`);
           continue;
         }
         
-        // Parse and merge
         let cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
         
         if (!cleaned || cleaned === '[]') {
-          console.warn(`⚠️ Chunk ${i + 1} returned empty array, skipping...`);
           continue;
         }
         
@@ -272,32 +239,18 @@ JSON:`;
         try {
           parsed = JSON.parse(cleaned);
         } catch (parseError) {
-          // If truncated (MAX_TOKENS), try to repair
-          if (finishReason === 'MAX_TOKENS') {
-            console.warn(`⚠️ Chunk ${i + 1} truncated, attempting repair...`);
-            // Import and use repair function
-            cleaned = this.attemptFixIncompleteJSON(cleaned);
-            try {
-              parsed = JSON.parse(cleaned);
-              console.log(`✅ Successfully repaired chunk ${i + 1}`);
-            } catch (repairError) {
-              console.error(`❌ Repair failed for chunk ${i + 1}:`, repairError);
-              continue;
-            }
-          } else {
-            throw parseError;
+          cleaned = this.attemptFixIncompleteJSON(cleaned);
+          try {
+            parsed = JSON.parse(cleaned);
+          } catch (repairError) {
+            continue;
           }
         }
         
         if (Array.isArray(parsed)) {
-          console.log(`📦 Chunk ${i + 1} added ${parsed.length} departments`);
-          
-          // Merge departments intelligently - combine students from same department
           for (const dept of parsed) {
             const existing = allResults.find(d => d.code === dept.code || d.name === dept.name);
             if (existing) {
-              // Merge students from same department
-              console.log(`🔄 Merging students into existing department: ${dept.name}`);
               existing.students = existing.students || [];
               existing.students.push(...(dept.students || []));
             } else {
@@ -306,8 +259,8 @@ JSON:`;
           }
         }
       } catch (error) {
-        console.error(`❌ Error processing chunk ${i + 1}:`, error);
-        // Continue with other chunks
+        // Continue with other chunks even if one fails
+        continue;
       }
     }
     
@@ -325,8 +278,6 @@ JSON:`;
       }
     }
     
-    console.log(`✅ Merged ${allResults.length} unique departments from ${chunks.length} chunks`);
-    
     return JSON.stringify(allResults);
   }
 
@@ -335,24 +286,15 @@ JSON:`;
    */
   async checkConnection(): Promise<boolean> {
     if (!this.model) {
-      console.error('❌ Model not initialized - API key missing');
       return false;
     }
 
     try {
-      console.log('🔍 Testing Gemini API connection...');
       const result = await this.model.generateContent('Hello');
       const response = await result.response;
       const text = response.text();
-      console.log('✅ Connection test successful, response:', text.substring(0, 50));
       return true;
     } catch (error: any) {
-      console.error('❌ Gemini connection check failed:', error);
-      console.error('Error details:', {
-        message: error.message,
-        status: error.status,
-        statusText: error.statusText
-      });
       return false;
     }
   }
@@ -366,25 +308,18 @@ JSON:`;
     }
 
     try {
-      console.log('📋 Fetching available models from Gemini API...');
-      
-      // Try to call the listModels API
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`
       );
       
       if (!response.ok) {
-        console.error('Failed to fetch models:', response.status, response.statusText);
         return [];
       }
       
       const data = await response.json();
       const models = data.models?.map((m: any) => m.name) || [];
-      console.log('✅ Available models:', models);
       return models;
     } catch (error) {
-      console.error('Error listing models:', error);
-      // Return common model names as fallback
       return [
         'gemini-1.5-pro',
         'gemini-1.5-flash',
